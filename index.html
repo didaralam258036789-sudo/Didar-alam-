@@ -23,6 +23,12 @@ button.g{background:var(--bg);color:var(--tx);border:1px solid var(--bd)}
 img.p{max-width:100%;border-radius:10px;margin-top:8px}
 .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .m{padding:8px 10px;border-radius:10px;margin:6px 0;background:var(--bg)}.m.me{background:#dbe8ff;color:#1d2433}
+.ban{background:linear-gradient(135deg,#1f6f54,#2f6fed);color:#fff;border-radius:14px;padding:16px;margin-bottom:12px;text-align:center}
+.ar{font:24px/2 "Amiri","Noto Naskh Arabic","Traditional Arabic",serif;direction:rtl;margin-bottom:6px}
+.stg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.stg>div{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center;font-size:13px}.stg b{display:block;font-size:22px}
+.bd{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;color:#fff}
+.bar{height:8px;background:var(--bg);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:#25a244}
+.ft{text-align:center;color:var(--mu);font-size:12px;margin:18px 0 6px}
 </style>
 </head>
 <body><div class="w" id="app"></div>
@@ -30,6 +36,18 @@ img.p{max-width:100%;border-radius:10px;margin-top:8px}
 const SB="https://nysyabjvchftqsuyctxj.supabase.co",KEY="sb_publishable_0zEy4zpSzIrrshotzkOPOw_U_tiOmev";
 const sb=supabase.createClient(SB,KEY);
 const sb2=supabase.createClient(SB,KEY,{auth:{persistSession:false,autoRefreshToken:false,storageKey:"x2"}});
+const AY=[
+["يَا أَيُّهَا الَّذِينَ آمَنُوا قُوا أَنفُسَكُمْ وَأَهْلِيكُمْ نَارًا","হে মুমিনগণ! তোমরা নিজেদের ও নিজেদের পরিবার-পরিজনকে আগুন থেকে রক্ষা করো।","সূরা আত-তাহরীম ৬৬:৬"],
+["الْمَالُ وَالْبَنُونَ زِينَةُ الْحَيَاةِ الدُّنْيَا","সম্পদ ও সন্তান-সন্ততি দুনিয়ার জীবনের শোভা।","সূরা আল-কাহফ ১৮:৪৬"],
+["وَاعْلَمُوا أَنَّمَا أَمْوَالُكُمْ وَأَوْلَادُكُمْ فِتْنَةٌ وَأَنَّ اللَّهَ عِندَهُ أَجْرٌ عَظِيمٌ","জেনে রাখো, তোমাদের সম্পদ ও সন্তান-সন্ততি পরীক্ষাস্বরূপ, আর আল্লাহর কাছেই রয়েছে মহাপুরস্কার।","সূরা আল-আনফাল ৮:২৮"],
+["رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا","হে আমাদের রব! আমাদের স্ত্রী ও সন্তানদের মাধ্যমে আমাদের চোখ শীতল করুন এবং আমাদের মুত্তাকীদের নেতা বানিয়ে দিন।","সূরা আল-ফুরকান ২৫:৭৪"],
+["وَقُل رَّبِّ زِدْنِي عِلْمًا","আর বলো, হে আমার রব! আমার জ্ঞান বাড়িয়ে দিন।","সূরা ত্বা-হা ২০:১১৪"],
+["هَلْ يَسْتَوِي الَّذِينَ يَعْلَمُونَ وَالَّذِينَ لَا يَعْلَمُونَ","বলো, যারা জানে আর যারা জানে না, তারা কি সমান?","সূরা আয-যুমার ৩৯:৯"]];
+const BC={"বাকি":"#6b7385","জমা হয়েছে":"#2f6fed","সঠিক":"#1f9d55","সংশোধন প্রয়োজন":"#e08a00","অসম্পূর্ণ":"#d64545"};
+const stOf=a=>a.status!="বাকি"?a.status:(a.submissions?.length?"জমা হয়েছে":"বাকি");
+const bdg=x=>`<span class="bd" style="background:${BC[x]}">${x}</span>`;
+const fd=d=>d?new Date(d).toLocaleDateString("bn-BD",{day:"numeric",month:"short"}):"—";
+const OPEN=["বাকি","সংশোধন প্রয়োজন","অসম্পূর্ণ"];
 let me=null,photo=null,rec=null,chunks=[],audioBlob=null;
 const $=i=>document.getElementById(i),v=i=>$(i).value.trim();
 const e=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -46,20 +64,53 @@ function login(setup){
  <label>পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)</label><input id="pw" type="password">
  <button class="full" onclick="${setup?"signup()":"doLogin()"}">${setup?"শিক্ষক অ্যাকাউন্ট খুলুন":"লগইন"}</button>
  <p class="mu" id="er"></p>
- <p class="mu" onclick="login(${!setup})" style="cursor:pointer;text-decoration:underline">${setup?"← লগইনে ফিরুন":"প্রথমবার শিক্ষক হিসেবে অ্যাকাউন্ট খুলবেন? এখানে চাপুন"}</p></div>`}
+ <p class="mu" onclick="login(${!setup})" style="cursor:pointer;text-decoration:underline">${setup?"← লগইনে ফিরুন":"প্রথমবার শিক্ষক হিসেবে অ্যাকাউন্ট খুলবেন? এখানে চাপুন"}</p><div class="ft">তৈরি করেছেন: <b>দিদার আলম</b></div></div>`}
 async function doLogin(){const{error}=await sb.auth.signInWithPassword({email:mail(v("ph")),password:v("pw")});if(error)return $("er").textContent="মোবাইল নম্বর বা পাসওয়ার্ড ভুল";boot()}
 async function signup(){const{error}=await sb.auth.signUp({email:mail(v("ph")),password:v("pw"),options:{data:{name:v("nm"),phone:v("ph")}}});if(error)return $("er").textContent="হয়নি: "+error.message;boot()}
 async function boot(){const{data:{session}}=await sb.auth.getSession();if(!session)return login(false);
  const{data}=await sb.from("profiles").select("*").eq("id",session.user.id).single();me=data;if(!me)return login(false);shell()}
 async function out(){await sb.auth.signOut();login(false)}
 
-const T=()=>me.role=="teacher"?[["rep","রিপোর্ট"],["stu","ছাত্র"],["gd","গাইড"],["msg","বার্তা"],["ai","সহায়ক"]]:[["rep","রিপোর্ট"],["gd","গাইড"],["msg","বার্তা"],["ai","সহায়ক"]];
+const T=()=>me.role=="teacher"?[["rep","রিপোর্ট"],["hw","বাড়ির কাজ"],["stu","ছাত্র"],["gd","গাইড"],["msg","বার্তা"],["ai","সহায়ক"]]:[["home","হোম"],["hw","বাড়ির কাজ"],["rep","রিপোর্ট"],["gd","গাইড"],["msg","বার্তা"],["ai","সহায়ক"]];
 function shell(){$("app").innerHTML=`<div class="top"><b>${me.role=="teacher"?"👩‍🏫 শিক্ষক":"👪 অভিভাবক"}: ${e(me.name)}</b><button class="g" onclick="out()">বের হন</button></div>
-<div class="tabs">${T().map(t=>`<button id="t_${t[0]}" onclick="go('${t[0]}')">${t[1]}</button>`).join("")}</div><div id="main"></div>`;go("rep")}
+<div class="tabs">${T().map(t=>`<button id="t_${t[0]}" onclick="go('${t[0]}')">${t[1]}</button>`).join("")}</div><div id="main"></div><div class="ft">তৈরি করেছেন: <b>দিদার আলম</b></div>`;go(me.role=="teacher"?"rep":"home")}
 async function go(t){document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.id=="t_"+t));$("main").innerHTML='<p class="mu">লোড হচ্ছে...</p>';try{await V[t]()}catch(x){$("main").innerHTML='<p>সমস্যা: '+e(x.message)+"</p>"}}
 const stuOpts=async()=>{const{data}=await sb.from("students").select("*,profiles(phone,name)").order("name");return data||[]};
 
 const V={
+async home(){const S=await stuOpts();
+ const{data:A}=await sb.from("assignments").select("*,students(name),submissions(id)").order("due_date");
+ const{data:R}=await sb.from("reports").select("*,students(name)").order("date",{ascending:false}).limit(1);
+ const L=A||[],td=new Date().toISOString().slice(0,10),d=new Date(),y=AY[Math.floor((d-new Date(d.getFullYear(),0,0))/864e5)%AY.length];
+ const pend=L.filter(a=>OPEN.includes(stOf(a))),ok=L.filter(a=>stOf(a)=="সঠিক").length;
+ const g=L.filter(a=>a.marks!=null&&a.max_marks>0),sub={};g.forEach(a=>{const k=a.subject||"অন্যান্য";sub[k]=sub[k]||[0,0];sub[k][0]+=+a.marks;sub[k][1]+=+a.max_marks});
+ const tm=g.reduce((x,a)=>x+ +a.marks,0),tx=g.reduce((x,a)=>x+ +a.max_marks,0),pc=tx?Math.round(tm*100/tx):null;
+ const r=R&&R[0];
+ $("main").innerHTML=`<div class="ban"><div class="ar">${y[0]}</div><div>${y[1]}</div><div style="opacity:.8;font-size:12px;margin-top:4px">${y[2]}</div></div>
+ <div class="c"><b>আসসালামু আলাইকুম, ${e(me.name||"")} 👋</b><div class="mu">সন্তান: ${S.map(s=>e(s.name)).join(", ")||"—"}</div></div>
+ <div class="stg"><div><b>${pend.length}</b>বাকি কাজ</div><div><b>${ok}</b>সঠিক কাজ</div><div><b>${pc==null?"—":pc+"%"}</b>গড় নম্বর</div></div>
+ <div class="c"><b>📝 বাকি কাজ</b>${pend.map(a=>{const late=a.due_date&&a.due_date<td;return`<div style="margin-top:10px"><b>${e(a.title)}</b> ${bdg(stOf(a))}<div class="mu">${e(a.students.name)} · ${e(a.subject||"")} · শেষ তারিখ: ${fd(a.due_date)}${late?' <span style="color:#d64545">(মেয়াদ শেষ)</span>':""}</div></div>`}).join("")||'<div class="mu" style="margin-top:6px">কোনো বাকি কাজ নেই 🎉</div>'}
+ <button class="full" onclick="go('hw')">বাড়ির কাজ দেখুন ও জমা দিন</button></div>
+ <div class="c"><b>📊 বিষয়ভিত্তিক নম্বর</b>${Object.entries(sub).map(([k,m])=>{const p=Math.round(m[0]*100/m[1]);return`<div style="margin-top:10px"><div class="row" style="justify-content:space-between;text-align:left"><span>${e(k)}</span><span style="text-align:right">${m[0]}/${m[1]} (${p}%)</span></div><div class="bar"><i style="width:${p}%"></i></div></div>`}).join("")||'<div class="mu" style="margin-top:6px">এখনো নম্বর দেওয়া হয়নি</div>'}</div>
+ ${r?`<div class="c"><b>📘 সর্বশেষ পড়া</b> <span class="mu">${e(r.students.name)} · ${r.date}</span><div style="margin-top:6px">${e(r.today_lesson||"")}</div>${r.homework?`<div class="hw">✏️ ${e(r.homework)}</div>`:""}<div style="margin-top:6px"><span class="tag">${e(r.rating||"")}</span></div></div>`:""}`},
+async hw(){const S=await stuOpts();const T_=me.role=="teacher",td=new Date().toISOString().slice(0,10);
+ const{data:A}=await sb.from("assignments").select("*,students(name),submissions(*)").order("due_date",{ascending:false});
+ let h="";
+ if(T_)h+=`<div class="c"><b>নতুন বাড়ির কাজ</b><label>ছাত্র</label><select id="hs"><option value="all">সব ছাত্র</option>${S.map(s=>`<option value="${s.id}">${e(s.name)}</option>`).join("")}</select>
+ <label>বিষয়</label><input id="hj"><label>কাজের শিরোনাম</label><input id="ht"><label>বিস্তারিত</label><textarea id="hd"></textarea>
+ <div class="row"><div><label>জমার শেষ তারিখ</label><input type="date" id="hdt"></div><div><label>পূর্ণ নম্বর</label><input type="number" id="hm"></div></div>
+ <button class="full" onclick="addHw()">বাড়ির কাজ দিন</button></div>`;
+ h+=(A||[]).map(a=>{const st=stOf(a),late=a.due_date&&a.due_date<td&&OPEN.includes(st);
+ return`<div class="c"><b>${e(a.title)}</b> ${bdg(st)}<div class="mu">${e(a.students.name)} · ${e(a.subject||"")} · শেষ তারিখ: ${fd(a.due_date)}${late?' <span style="color:#d64545">(মেয়াদ শেষ)</span>':""}</div>
+ ${a.details?`<div style="margin-top:6px">${e(a.details)}</div>`:""}
+ ${a.marks!=null?`<div style="margin-top:6px">🏅 নম্বর: <b>${a.marks}${a.max_marks?"/"+a.max_marks:""}</b></div>`:""}
+ ${a.feedback?`<div class="hw">💬 ${e(a.feedback)}</div>`:""}
+ ${(a.submissions||[]).map(x=>`<div class="m"><div class="mu">জমা: ${fmt(x.created_at)}</div>${e(x.note||"")}${x.photo_url?`<a href="${e(x.photo_url)}" target="_blank"><img class="p" src="${e(x.photo_url)}"></a>`:""}</div>`).join("")}
+ ${T_?`<label>অবস্থা</label><select id="s_${a.id}">${["জমা হয়েছে","সঠিক","সংশোধন প্রয়োজন","অসম্পূর্ণ","বাকি"].map(x=>`<option ${x==st?"selected":""}>${x}</option>`).join("")}</select>
+ <div class="row"><input id="m_${a.id}" type="number" placeholder="প্রাপ্ত নম্বর" value="${a.marks??""}"><input id="f_${a.id}" placeholder="মন্তব্য" value="${e(a.feedback||"")}"></div>
+ <div class="row" style="margin-top:8px"><button onclick="markHw('${a.id}')">সেভ</button><button class="g" onclick="del('assignments','${a.id}')">মুছুন</button></div>`
+ :(st!="সঠিক"?`<label>কাজের ছবি তুলে জমা দিন</label><input type="file" id="sf_${a.id}" accept="image/*"><label>মন্তব্য (ঐচ্ছিক)</label><input id="sn_${a.id}"><button class="full" id="sb_${a.id}" onclick="subHw('${a.id}')">জমা দিন</button>`:"")}</div>`}).join("")||'<div class="c mu">কোনো বাড়ির কাজ নেই</div>';
+ $("main").innerHTML=h},
 async rep(){const S=await stuOpts();let h="";
  if(me.role=="teacher")h+=`<div class="c"><b>নতুন রিপোর্ট</b>
  <label>ছাত্র</label><select id="sid">${S.map(s=>`<option value="${s.id}">${e(s.name)}</option>`).join("")}</select>
@@ -102,12 +153,19 @@ async ai(){$("main").innerHTML=`<div class="c"><b>🤖 সহায়ক</b><la
  <label>লিখুন</label><textarea id="ai_in"></textarea><button class="full" onclick="askAI()">পাঠান</button><div id="ai_out" class="m" style="white-space:pre-wrap;margin-top:12px"></div></div>`}
 };
 
+async function addHw(){const t=v("ht");if(!t)return alert("শিরোনাম লিখুন");
+ const ids=v("hs")=="all"?(await stuOpts()).map(s=>s.id):[v("hs")];if(!ids.length||!ids[0])return alert("আগে ছাত্র যোগ করুন");
+ const{error}=await sb.from("assignments").insert(ids.map(id=>({student_id:id,title:t,subject:v("hj"),details:v("hd"),due_date:v("hdt")||null,max_marks:v("hm")||null})));
+ if(error)return alert("হয়নি: "+error.message);go("hw")}
+async function markHw(id){const m=v("m_"+id);const{error}=await sb.from("assignments").update({status:v("s_"+id),marks:m===""?null:Number(m),feedback:v("f_"+id)}).eq("id",id);if(error)return alert("হয়নি: "+error.message);go("hw")}
+async function subHw(id){const f=$("sf_"+id).files[0];if(!f)return alert("ছবি বাছুন");const b=$("sb_"+id);b.textContent="জমা হচ্ছে...";
+ try{const u=await up(await shrink(f),"jpg");const{error}=await sb.from("submissions").insert({assignment_id:id,photo_url:u,note:v("sn_"+id)});if(error)throw error;go("hw")}catch(x){alert("জমা হয়নি: "+x.message);b.textContent="জমা দিন"}}
 function pickP(i){const f=i.files[0];photo=null;if(f)shrink(f).then(b=>photo=b)}
 async function saveRep(){const b=$("sv");if(!v("sid")||!v("tl"))return alert("ছাত্র ও আজকের পড়া লিখুন");b.textContent="সেভ হচ্ছে...";
  try{let u=null;if(photo)u=await up(photo,"jpg");
  const{error}=await sb.from("reports").insert({student_id:v("sid"),date:v("dt"),start_time:v("st"),end_time:v("en"),subject:v("sj"),today_lesson:v("tl"),amount:v("am"),homework:v("hw"),rating:v("rt"),comment:v("cm"),photo_url:u});
  if(error)throw error;photo=null;go("rep")}catch(x){alert("সেভ হয়নি: "+x.message);b.textContent="সেভ করুন"}}
-async function del(t,id){if(!confirm("মুছবেন?"))return;await sb.from(t).delete().eq("id",id);go(t=="reports"?"rep":t=="students"?"stu":"gd")}
+async function del(t,id){if(!confirm("মুছবেন?"))return;await sb.from(t).delete().eq("id",id);go(t=="reports"?"rep":t=="students"?"stu":t=="assignments"?"hw":"gd")}
 async function addStu(){const er=$("er");er.textContent="অপেক্ষা করুন...";try{
  const ph=v("pp");if(!v("sn")||!ph||v("pq").length<6)throw Error("নাম, নম্বর ও ৬+ অক্ষরের পাসওয়ার্ড দিন");
  let{data:ex}=await sb.from("profiles").select("id").eq("phone",ph).maybeSingle();let pid=ex?.id;
