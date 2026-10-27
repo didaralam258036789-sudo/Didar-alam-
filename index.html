@@ -28,7 +28,6 @@ img.p{max-width:100%;border-radius:10px;margin-top:8px}
 <body><div class="w" id="app"></div>
 <script type="text/plain" id="mainjs">
 const SB="https://nysyabjvchftqsuyctxj.supabase.co",KEY="sb_publishable_0zEy4zpSzIrrshotzkOPOw_U_tiOmev";
-const GEM=""; // Gemini API key এখানে বসান (পরে)
 const sb=supabase.createClient(SB,KEY);
 const sb2=supabase.createClient(SB,KEY,{auth:{persistSession:false,autoRefreshToken:false,storageKey:"x2"}});
 let me=null,photo=null,rec=null,chunks=[],audioBlob=null;
@@ -123,11 +122,8 @@ async function recTog(){const b=$("rb");if(rec&&rec.state=="recording"){rec.stop
 async function sendMsg(){if(!v("mt")&&!audioBlob)return alert("কিছু লিখুন বা ভয়েস দিন");
  try{let u=null;if(audioBlob){u=await up(audioBlob,(audioBlob.type.includes("mp4")?"m4a":"webm"))}
  const{error}=await sb.from("messages").insert({student_id:v("ms"),from_parent:me.role=="parent",text:v("mt"),audio_url:u});if(error)throw error;audioBlob=null;go("msg")}catch(x){alert("পাঠানো যায়নি: "+x.message)}}
-async function askAI(){const o=$("ai_out"),m=v("md"),t=v("ai_in");if(!t)return;if(!GEM)return o.textContent="AI চালু করতে Gemini কী বসাতে হবে (শিক্ষককে জানান)।";o.textContent="অপেক্ষা করুন...";
- const P={q:"তুমি একজন সহায়ক শিক্ষক। সহজ বাংলায় উত্তর দাও: ",
- "en-bn":"Translate to Bengali, output only the translation: ","bn-en":"Translate to English, output only the translation: ","ar-bn":"Translate Arabic to Bengali, output only the translation: ","bn-ar":"Translate Bengali to Arabic (with harakat), output only the translation: ","pr":"Write the pronunciation of this English text in Bengali script only, then its Bengali meaning on a new line: "};
- try{const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+GEM,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:P[m]+t}]}]})});
- const j=await r.json();o.textContent=j.candidates?.[0]?.content?.parts?.[0]?.text||"উত্তর পাওয়া যায়নি, একটু পরে চেষ্টা করুন"}catch(x){o.textContent="সমস্যা হয়েছে"}}
+async function askAI(){const o=$("ai_out"),m=v("md"),t=v("ai_in");if(!t)return;o.textContent="অপেক্ষা করুন...";
+ try{const{data,error}=await sb.functions.invoke("ai",{body:{mode:m,text:t}});if(error)throw error;o.textContent=data.answer||"উত্তর পাওয়া যায়নি"}catch(x){o.textContent="সমস্যা হয়েছে, একটু পরে চেষ্টা করুন"}}
 boot();
 </script>
 <script>(function(){var a=document.getElementById("app");a.innerHTML='<p style="padding:30px">লোড হচ্ছে...</p>';var u=["https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js","https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js","https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.45.4/umd/supabase.min.js"],i=0;function run(){if(!window.supabase)return t();var s=document.createElement("script");s.textContent=document.getElementById("mainjs").textContent;document.body.appendChild(s)}function t(){if(i>=u.length){a.innerHTML='<p style="padding:30px">ইন্টারনেট ধীর বা ব্লক হয়েছে। পেজ রিফ্রেশ করুন।</p>';return}var s=document.createElement("script");s.src=u[i++];s.onload=run;s.onerror=t;document.head.appendChild(s)}t()})()</script>
