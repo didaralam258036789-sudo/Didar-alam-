@@ -123,7 +123,7 @@ async function sendMsg(){if(!v("mt")&&!audioBlob)return alert("কিছু ল�
  try{let u=null;if(audioBlob){u=await up(audioBlob,(audioBlob.type.includes("mp4")?"m4a":"webm"))}
  const{error}=await sb.from("messages").insert({student_id:v("ms"),from_parent:me.role=="parent",text:v("mt"),audio_url:u});if(error)throw error;audioBlob=null;go("msg")}catch(x){alert("পাঠানো যায়নি: "+x.message)}}
 async function askAI(){const o=$("ai_out"),m=v("md"),t=v("ai_in");if(!t)return;o.textContent="অপেক্ষা করুন...";
- try{const{data,error}=await sb.functions.invoke("ai",{body:{mode:m,text:t}});if(error)throw error;o.textContent=data.answer||"উত্তর পাওয়া যায়নি"}catch(x){o.textContent="সমস্যা হয়েছে, একটু পরে চেষ্টা করুন"}}
+ try{const{data,error}=await sb.functions.invoke("hyper-handler",{body:{mode:m,text:t}});if(error)throw error;o.textContent=data.answer||"উত্তর পাওয়া যায়নি"}catch(x){o.textContent="সমস্যা হয়েছে, একটু পরে চেষ্টা করুন"}}
 boot();
 </script>
 <script>(function(){var a=document.getElementById("app");a.innerHTML='<p style="padding:30px">লোড হচ্ছে...</p>';var u=["https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js","https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js","https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.45.4/umd/supabase.min.js"],i=0;function run(){if(!window.supabase)return t();var s=document.createElement("script");s.textContent=document.getElementById("mainjs").textContent;document.body.appendChild(s)}function t(){if(i>=u.length){a.innerHTML='<p style="padding:30px">ইন্টারনেট ধীর বা ব্লক হয়েছে। পেজ রিফ্রেশ করুন।</p>';return}var s=document.createElement("script");s.src=u[i++];s.onload=run;s.onerror=t;document.head.appendChild(s)}t()})()</script>
