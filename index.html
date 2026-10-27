@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>পড়ার রিপোর্ট</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+:root{--bg:#f4f6fb;--cd:#fff;--tx:#1d2433;--mu:#6b7385;--pr:#2f6fed;--bd:#e2e5ee}
+@media(prefers-color-scheme:dark){:root{--bg:#12151d;--cd:#1b2030;--tx:#e8ebf3;--mu:#98a0b5;--bd:#2c3347}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px system-ui,"Noto Sans Bengali",sans-serif}
+.w{max-width:600px;margin:0 auto;padding:12px}
+.c{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+label{display:block;font-size:13px;color:var(--mu);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit}
+textarea{min-height:64px}
+button,a.b{font:inherit;border:0;border-radius:10px;padding:10px 14px;background:var(--pr);color:#fff;cursor:pointer;text-decoration:none;display:inline-block}
+button.g{background:var(--bg);color:var(--tx);border:1px solid var(--bd)}
+.wa{background:#25a244!important}.full{width:100%;margin-top:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;text-align:center}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px}.tabs button{flex:1;white-space:nowrap;background:var(--cd);color:var(--tx);border:1px solid var(--bd)}.tabs button.on{background:var(--pr);color:#fff}
+.mu{color:var(--mu);font-size:13px}.tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;background:var(--bg);border:1px solid var(--bd);margin-right:4px}
+.hw{background:#fff7d6;color:#5a4500;padding:8px;border-radius:8px;margin-top:6px}
+img.p{max-width:100%;border-radius:10px;margin-top:8px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.m{padding:8px 10px;border-radius:10px;margin:6px 0;background:var(--bg)}.m.me{background:#dbe8ff;color:#1d2433}
+</style>
+</head>
+<body><div class="w" id="app"></div>
+<script>
+const SB="https://nysyabjvchftqsuyctxj.supabase.co",KEY="sb_publishable_0zEy4zpSzIrrshotzkOPOw_U_tiOmev";
+const GEM=""; // Gemini API key এখানে বসান (পরে)
+const sb=supabase.createClient(SB,KEY);
+const sb2=supabase.createClient(SB,KEY,{auth:{persistSession:false,autoRefreshToken:false,storageKey:"x2"}});
+let me=null,photo=null,rec=null,chunks=[],audioBlob=null;
+const $=i=>document.getElementById(i),v=i=>$(i).value.trim();
+const e=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const mail=p=>p.replace(/\D/g,"")+"@school.app";
+const wa=(p,t)=>"https://wa.me/"+(p||"").replace(/\D/g,"").replace(/^0/,"88")+"?text="+encodeURIComponent(t);
+const fmt=d=>new Date(d).toLocaleString("bn-BD",{dateStyle:"medium",timeStyle:"short"});
+const up=async(blob,ext)=>{const p="f/"+Date.now()+Math.random().toString(36).slice(2,6)+"."+ext;const{error}=await sb.storage.from("files").upload(p,blob,{contentType:blob.type});if(error)throw error;return sb.storage.from("files").getPublicUrl(p).data.publicUrl};
+const shrink=f=>new Promise((ok,no)=>{const r=new FileReader();r.onerror=no;r.onload=()=>{const i=new Image();i.onerror=no;i.onload=()=>{const k=Math.min(1,1000/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*k;c.height=i.height*k;c.getContext("2d").drawImage(i,0,0,c.width,c.height);c.toBlob(ok,"image/jpeg",.7)};i.src=r.result};r.readAsDataURL(f)});
+
+function login(setup){
+ $("app").innerHTML=`<div class="c" style="margin-top:40px"><h2>📘 পড়ার রিপোর্ট</h2>
+ ${setup?`<label>আপনার নাম</label><input id="nm">`:""}
+ <label>মোবাইল নম্বর</label><input id="ph" inputmode="numeric" placeholder="01XXXXXXXXX">
+ <label>পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)</label><input id="pw" type="password">
+ <button class="full" onclick="${setup?"signup()":"doLogin()"}">${setup?"শিক্ষক অ্যাকাউন্ট খুলুন":"লগইন"}</button>
+ <p class="mu" id="er"></p>
+ <p class="mu" onclick="login(${!setup})" style="cursor:pointer;text-decoration:underline">${setup?"← লগইনে ফিরুন":"প্রথমবার শিক্ষক হিসেবে অ্যাকাউন্ট খুলবেন? এখানে চাপুন"}</p></div>`}
+async function doLogin(){const{error}=await sb.auth.signInWithPassword({email:mail(v("ph")),password:v("pw")});if(error)return $("er").textContent="মোবাইল নম্বর বা পাসওয়ার্ড ভুল";boot()}
+async function signup(){const{error}=await sb.auth.signUp({email:mail(v("ph")),password:v("pw"),options:{data:{name:v("nm"),phone:v("ph")}}});if(error)return $("er").textContent="হয়নি: "+error.message;boot()}
+async function boot(){const{data:{session}}=await sb.auth.getSession();if(!session)return login(false);
+ const{data}=await sb.from("profiles").select("*").eq("id",session.user.id).single();me=data;if(!me)return login(false);shell()}
+async function out(){await sb.auth.signOut();login(false)}
+
+const T=()=>me.role=="teacher"?[["rep","রিপোর্ট"],["stu","ছাত্র"],["gd","গাইড"],["msg","বার্তা"],["ai","সহায়ক"]]:[["rep","রিপোর্ট"],["gd","গাইড"],["msg","বার্তা"],["ai","সহায়ক"]];
+function shell(){$("app").innerHTML=`<div class="top"><b>${me.role=="teacher"?"👩‍🏫 শিক্ষক":"👪 অভিভাবক"}: ${e(me.name)}</b><button class="g" onclick="out()">বের হন</button></div>
+<div class="tabs">${T().map(t=>`<button id="t_${t[0]}" onclick="go('${t[0]}')">${t[1]}</button>`).join("")}</div><div id="main"></div>`;go("rep")}
+async function go(t){document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.id=="t_"+t));$("main").innerHTML='<p class="mu">লোড হচ্ছে...</p>';try{await V[t]()}catch(x){$("main").innerHTML='<p>সমস্যা: '+e(x.message)+"</p>"}}
+const stuOpts=async()=>{const{data}=await sb.from("students").select("*,profiles(phone,name)").order("name");return data||[]};
+
+const V={
+async rep(){const S=await stuOpts();let h="";
+ if(me.role=="teacher")h+=`<div class="c"><b>নতুন রিপোর্ট</b>
+ <label>ছাত্র</label><select id="sid">${S.map(s=>`<option value="${s.id}">${e(s.name)}</option>`).join("")}</select>
+ <label>তারিখ</label><input type="date" id="dt" value="${new Date().toISOString().slice(0,10)}">
+ <div class="row"><div><label>শুরু</label><input type="time" id="st"></div><div><label>শেষ</label><input type="time" id="en"></div></div>
+ <label>বিষয়</label><input id="sj"><label>আজকের পড়া</label><textarea id="tl"></textarea>
+ <label>কত পৃষ্ঠা/অধ্যায় করানো হয়েছে</label><input id="am">
+ <label>আগামীকালের বাড়ির কাজ</label><textarea id="hw"></textarea>
+ <label>পড়া কেমন শিখল</label><select id="rt"><option>ভালো</option><option>মোটামুটি</option><option>দুর্বল</option></select>
+ <label>মন্তব্য</label><textarea id="cm"></textarea>
+ <label>খাতার ছবি</label><input type="file" id="pf" accept="image/*" onchange="pickP(this)">
+ <button class="full" id="sv" onclick="saveRep()">সেভ করুন</button></div>`;
+ const{data:R}=await sb.from("reports").select("*,students(name,profiles(phone))").order("date",{ascending:false}).order("created_at",{ascending:false}).limit(40);
+ h+=(R||[]).map(r=>{const t=`📘 ${r.students.name}\nতারিখ: ${r.date}\nসময়: ${r.start_time||""}-${r.end_time||""}\nবিষয়: ${r.subject||""}\nআজকের পড়া: ${r.today_lesson||""}\nকরানো হয়েছে: ${r.amount||""}\nবাড়ির কাজ: ${r.homework||""}\nপড়া শেখা: ${r.rating||""}\nমন্তব্য: ${r.comment||""}`;
+ return`<div class="c"><b>${e(r.students.name)}</b> <span class="mu">${r.date} ${e(r.start_time||"")}-${e(r.end_time||"")}</span>
+ <div style="margin:6px 0"><span class="tag">${e(r.subject||"")}</span><span class="tag">${e(r.rating||"")}</span></div>
+ <div>📖 ${e(r.today_lesson)}</div>${r.amount?`<div class="mu">করানো হয়েছে: ${e(r.amount)}</div>`:""}
+ ${r.homework?`<div class="hw">✏️ কালকের বাড়ির কাজ: ${e(r.homework)}</div>`:""}
+ ${r.comment?`<div class="mu" style="margin-top:6px">💬 ${e(r.comment)}</div>`:""}${r.photo_url?`<img class="p" src="${e(r.photo_url)}">`:""}
+ ${me.role=="teacher"?`<div class="row" style="margin-top:10px"><a class="b wa" target="_blank" href="${wa(r.students.profiles?.phone,t)}">WhatsApp</a><button class="g" onclick="del('reports','${r.id}')">মুছুন</button></div>`:`<div style="margin-top:10px"><button class="g" onclick="navigator.share?navigator.share({text:${e(JSON.stringify(t))}}):alert('শেয়ার সম্ভব নয়')">শেয়ার</button></div>`}</div>`}).join("")||'<div class="c mu">কোনো রিপোর্ট নেই</div>';
+ $("main").innerHTML=h},
+async stu(){const S=await stuOpts();$("main").innerHTML=`<div class="c"><b>নতুন ছাত্র ও অভিভাবক</b>
+ <label>ছাত্রের নাম</label><input id="sn"><label>শ্রেণী</label><input id="sc">
+ <label>অভিভাবকের নাম</label><input id="pn"><label>অভিভাবকের মোবাইল নম্বর</label><input id="pp" inputmode="numeric">
+ <label>অভিভাবকের জন্য পাসওয়ার্ড (৬+ অক্ষর, নিজে ঠিক করে তাদের জানান)</label><input id="pq">
+ <button class="full" onclick="addStu()">যোগ করুন</button><p class="mu" id="er"></p></div>`+
+ S.map(s=>`<div class="c"><b>${e(s.name)}</b> <span class="mu">শ্রেণী ${e(s.class||"")}</span><div class="mu">অভিভাবক: ${e(s.profiles?.name||"")} ${e(s.profiles?.phone||"")}</div><button class="g" style="margin-top:8px" onclick="del('students','${s.id}')">মুছুন</button></div>`).join("")},
+async gd(){const{data:G}=await sb.from("guides").select("*").order("class");
+ $("main").innerHTML=(me.role=="teacher"?`<div class="c"><b>গাইড যোগ করুন</b><label>শ্রেণী</label><input id="gc"><label>নাম</label><input id="gt"><label>ফাইল (PDF/ছবি)</label><input type="file" id="gf">
+ <button class="full" id="gb" onclick="addGd()">আপলোড</button></div>`:"")+
+ (G||[]).map(g=>`<div class="c"><b>${e(g.title)}</b> <span class="tag">শ্রেণী ${e(g.class||"")}</span><div class="row" style="margin-top:8px"><a class="b" target="_blank" href="${e(g.file_url)}">খুলুন</a><a class="b wa" target="_blank" href="https://wa.me/?text=${encodeURIComponent(g.title+" "+g.file_url)}">শেয়ার</a>${me.role=="teacher"?`<button class="g" onclick="del('guides','${g.id}')">মুছুন</button>`:""}</div></div>`).join("")||'<div class="c mu">কোনো গাইড নেই</div>'},
+async msg(){const S=await stuOpts();const{data:M}=await sb.from("messages").select("*,students(name)").order("created_at",{ascending:false}).limit(40);
+ $("main").innerHTML=`<div class="c"><label>${me.role=="teacher"?"কোন ছাত্রের অভিভাবককে":"কোন সন্তান সম্পর্কে"}</label><select id="ms">${S.map(s=>`<option value="${s.id}">${e(s.name)}</option>`).join("")}</select>
+ <label>বার্তা</label><textarea id="mt"></textarea>
+ <div class="row" style="margin-top:8px"><button id="rb" class="g" onclick="recTog()">🎙️ ভয়েস রেকর্ড</button><button onclick="sendMsg()">পাঠান</button></div><div id="au" class="mu"></div></div>`+
+ (M||[]).map(m=>{const mine=(m.from_parent)==(me.role=="parent");return`<div class="m ${mine?"me":""}"><div class="mu">${e(m.students?.name)} · ${m.from_parent?"অভিভাবক":"শিক্ষক"} · ${fmt(m.created_at)}</div>${e(m.text||"")}${m.audio_url?`<audio controls src="${e(m.audio_url)}" style="width:100%"></audio>`:""}</div>`}).join("")},
+async ai(){$("main").innerHTML=`<div class="c"><b>🤖 সহায়ক</b><label>কী করবেন</label><select id="md">
+ <option value="q">প্রশ্নের উত্তর (AI)</option><option value="en-bn">ইংরেজি → বাংলা</option><option value="bn-en">বাংলা → ইংরেজি</option>
+ <option value="ar-bn">আরবি → বাংলা</option><option value="bn-ar">বাংলা → আরবি</option><option value="pr">ইংরেজি উচ্চারণ বাংলায়</option></select>
+ <label>লিখুন</label><textarea id="ai_in"></textarea><button class="full" onclick="askAI()">পাঠান</button><div id="ai_out" class="m" style="white-space:pre-wrap;margin-top:12px"></div></div>`}
+};
+
+function pickP(i){const f=i.files[0];photo=null;if(f)shrink(f).then(b=>photo=b)}
+async function saveRep(){const b=$("sv");if(!v("sid")||!v("tl"))return alert("ছাত্র ও আজকের পড়া লিখুন");b.textContent="সেভ হচ্ছে...";
+ try{let u=null;if(photo)u=await up(photo,"jpg");
+ const{error}=await sb.from("reports").insert({student_id:v("sid"),date:v("dt"),start_time:v("st"),end_time:v("en"),subject:v("sj"),today_lesson:v("tl"),amount:v("am"),homework:v("hw"),rating:v("rt"),comment:v("cm"),photo_url:u});
+ if(error)throw error;photo=null;go("rep")}catch(x){alert("সেভ হয়নি: "+x.message);b.textContent="সেভ করুন"}}
+async function del(t,id){if(!confirm("মুছবেন?"))return;await sb.from(t).delete().eq("id",id);go(t=="reports"?"rep":t=="students"?"stu":"gd")}
+async function addStu(){const er=$("er");er.textContent="অপেক্ষা করুন...";try{
+ const ph=v("pp");if(!v("sn")||!ph||v("pq").length<6)throw Error("নাম, নম্বর ও ৬+ অক্ষরের পাসওয়ার্ড দিন");
+ let{data:ex}=await sb.from("profiles").select("id").eq("phone",ph).maybeSingle();let pid=ex?.id;
+ if(!pid){const{data,error}=await sb2.auth.signUp({email:mail(ph),password:v("pq"),options:{data:{name:v("pn"),phone:ph}}});if(error)throw error;pid=data.user.id}
+ const{error}=await sb.from("students").insert({name:v("sn"),class:v("sc"),parent_id:pid});if(error)throw error;go("stu")}catch(x){er.textContent="হয়নি: "+x.message}}
+async function addGd(){const f=$("gf").files[0];if(!f||!v("gt"))return alert("নাম ও ফাইল দিন");$("gb").textContent="আপলোড হচ্ছে...";
+ try{const u=await up(f,f.name.split(".").pop().toLowerCase());const{error}=await sb.from("guides").insert({class:v("gc"),title:v("gt"),file_url:u});if(error)throw error;go("gd")}catch(x){alert("হয়নি: "+x.message);$("gb").textContent="আপলোড"}}
+async function recTog(){const b=$("rb");if(rec&&rec.state=="recording"){rec.stop();return}
+ try{const s=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];rec=new MediaRecorder(s);rec.ondataavailable=x=>chunks.push(x.data);
+ rec.onstop=()=>{s.getTracks().forEach(t=>t.stop());audioBlob=new Blob(chunks,{type:rec.mimeType||"audio/webm"});b.textContent="🎙️ আবার রেকর্ড";$("au").innerHTML="রেকর্ড হয়েছে ✅ <audio controls src='"+URL.createObjectURL(audioBlob)+"' style='width:100%'></audio>"};
+ rec.start();b.textContent="⏹ থামান"}catch(x){alert("মাইক চালু করা যায়নি, ব্রাউজারে অনুমতি দিন")}}
+async function sendMsg(){if(!v("mt")&&!audioBlob)return alert("কিছু লিখুন বা ভয়েস দিন");
+ try{let u=null;if(audioBlob){u=await up(audioBlob,(audioBlob.type.includes("mp4")?"m4a":"webm"))}
+ const{error}=await sb.from("messages").insert({student_id:v("ms"),from_parent:me.role=="parent",text:v("mt"),audio_url:u});if(error)throw error;audioBlob=null;go("msg")}catch(x){alert("পাঠানো যায়নি: "+x.message)}}
+async function askAI(){const o=$("ai_out"),m=v("md"),t=v("ai_in");if(!t)return;if(!GEM)return o.textContent="AI চালু করতে Gemini কী বসাতে হবে (শিক্ষককে জানান)।";o.textContent="অপেক্ষা করুন...";
+ const P={q:"তুমি একজন সহায়ক শিক্ষক। সহজ বাংলায় উত্তর দাও: ",
+ "en-bn":"Translate to Bengali, output only the translation: ","bn-en":"Translate to English, output only the translation: ","ar-bn":"Translate Arabic to Bengali, output only the translation: ","bn-ar":"Translate Bengali to Arabic (with harakat), output only the translation: ","pr":"Write the pronunciation of this English text in Bengali script only, then its Bengali meaning on a new line: "};
+ try{const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+GEM,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:P[m]+t}]}]})});
+ const j=await r.json();o.textContent=j.candidates?.[0]?.content?.parts?.[0]?.text||"উত্তর পাওয়া যায়নি, একটু পরে চেষ্টা করুন"}catch(x){o.textContent="সমস্যা হয়েছে"}}
+boot();
+</script></body></html>
