@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>পড়ার রিপোর্ট</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
 :root{--bg:#f4f6fb;--cd:#fff;--tx:#1d2433;--mu:#6b7385;--pr:#2f6fed;--bd:#e2e5ee}
 @media(prefers-color-scheme:dark){:root{--bg:#12151d;--cd:#1b2030;--tx:#e8ebf3;--mu:#98a0b5;--bd:#2c3347}}
@@ -27,7 +26,7 @@ img.p{max-width:100%;border-radius:10px;margin-top:8px}
 </style>
 </head>
 <body><div class="w" id="app"></div>
-<script>
+<script type="text/plain" id="mainjs">
 const SB="https://nysyabjvchftqsuyctxj.supabase.co",KEY="sb_publishable_0zEy4zpSzIrrshotzkOPOw_U_tiOmev";
 const GEM=""; // Gemini API key এখানে বসান (পরে)
 const sb=supabase.createClient(SB,KEY);
@@ -130,4 +129,6 @@ async function askAI(){const o=$("ai_out"),m=v("md"),t=v("ai_in");if(!t)return;i
  try{const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+GEM,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:P[m]+t}]}]})});
  const j=await r.json();o.textContent=j.candidates?.[0]?.content?.parts?.[0]?.text||"উত্তর পাওয়া যায়নি, একটু পরে চেষ্টা করুন"}catch(x){o.textContent="সমস্যা হয়েছে"}}
 boot();
-</script></body></html>
+</script>
+<script>(function(){var a=document.getElementById("app");a.innerHTML='<p style="padding:30px">লোড হচ্ছে...</p>';var u=["https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js","https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js","https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.45.4/umd/supabase.min.js"],i=0;function run(){if(!window.supabase)return t();var s=document.createElement("script");s.textContent=document.getElementById("mainjs").textContent;document.body.appendChild(s)}function t(){if(i>=u.length){a.innerHTML='<p style="padding:30px">ইন্টারনেট ধীর বা ব্লক হয়েছে। পেজ রিফ্রেশ করুন।</p>';return}var s=document.createElement("script");s.src=u[i++];s.onload=run;s.onerror=t;document.head.appendChild(s)}t()})()</script>
+</body></html>
