@@ -71,13 +71,17 @@ async function boot(){const{data:{session}}=await sb.auth.getSession();if(!sessi
  const{data}=await sb.from("profiles").select("*").eq("id",session.user.id).single();me=data;if(!me)return login(false);shell()}
 async function out(){await sb.auth.signOut();login(false)}
 
-const T=()=>me.role=="teacher"?[["rep","রিপোর্ট"],["hw","বাড়ির কাজ"],["stu","ছাত্র"],["gd","গাইড"],["msg","বার্তা"],["ai","সহায়ক"]]:[["home","হোম"],["hw","বাড়ির কাজ"],["rep","রিপোর্ট"],["gd","গাইড"],["msg","বার্তা"],["ai","সহায়ক"]];
+const T=()=>me.role=="teacher"?[["rep","রিপোর্ট"],["hw","বাড়ির কাজ"],["tc","AI শিক্ষিকা"],["stu","ছাত্র"],["gd","গাইড"],["msg","বার্তা"],["ai","সহায়ক"]]:[["home","হোম"],["hw","বাড়ির কাজ"],["tc","AI শিক্ষিকা"],["rep","রিপোর্ট"],["gd","গাইড"],["msg","বার্তা"],["ai","সহায়ক"]];
 function shell(){$("app").innerHTML=`<div class="top"><b>${me.role=="teacher"?"👩‍🏫 শিক্ষক":"👪 অভিভাবক"}: ${e(me.name)}</b><button class="g" onclick="out()">বের হন</button></div>
 <div class="tabs">${T().map(t=>`<button id="t_${t[0]}" onclick="go('${t[0]}')">${t[1]}</button>`).join("")}</div><div id="main"></div><div class="ft">তৈরি করেছেন: <b>দিদার আলম</b></div>`;go(me.role=="teacher"?"rep":"home")}
-async function go(t){document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.id=="t_"+t));$("main").innerHTML='<p class="mu">লোড হচ্ছে...</p>';try{await V[t]()}catch(x){$("main").innerHTML='<p>সমস্যা: '+e(x.message)+"</p>"}}
+async function go(t){PLAY=false;WAS=false;try{ST++;speechSynthesis.cancel()}catch(e){}document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.id=="t_"+t));$("main").innerHTML='<p class="mu">লোড হচ্ছে...</p>';try{await V[t]()}catch(x){$("main").innerHTML='<p>সমস্যা: '+e(x.message)+"</p>"}}
 const stuOpts=async()=>{const{data}=await sb.from("students").select("*,profiles(phone,name)").order("name");return data||[]};
 
 const V={
+async tc(){$("main").innerHTML=`<div class="c"><b>👩‍🏫 AI শিক্ষিকা</b><div class="mu">ধাপে ধাপে কারণসহ বুঝিয়ে পড়ান, কণ্ঠে শোনান, প্রশ্নও করা যায়।</div>
+ <div class="row"><div><label>বিষয়</label><select id="tsb"><option>গণিত</option><option>ইংরেজি</option><option>বিজ্ঞান</option><option>বাংলা</option><option>আরবি</option></select></div><div><label>শ্রেণী</label><input id="tcl" placeholder="যেমন ৬"></div></div>
+ <label>পাঠের বিষয়</label><input id="tpc" placeholder="যেমন: এক চলকবিশিষ্ট সমীকরণ">
+ <button class="full" id="tgb" onclick="tcMake()">পাঠ তৈরি করুন</button><button class="full g" onclick="tcLoad(SAMPLE)">নমুনা পাঠ দেখুন</button></div><div id="tbox"></div>`;if(TL)tcShow()},
 async home(){const S=await stuOpts();
  const{data:A}=await sb.from("assignments").select("*,students(name),submissions(id)").order("due_date");
  const{data:R}=await sb.from("reports").select("*,students(name)").order("date",{ascending:false}).limit(1);
@@ -160,6 +164,45 @@ async function addHw(){const t=v("ht");if(!t)return alert("শিরোনাম
 async function markHw(id){const m=v("m_"+id);const{error}=await sb.from("assignments").update({status:v("s_"+id),marks:m===""?null:Number(m),feedback:v("f_"+id)}).eq("id",id);if(error)return alert("হয়নি: "+error.message);go("hw")}
 async function subHw(id){const f=$("sf_"+id).files[0];if(!f)return alert("ছবি বাছুন");const b=$("sb_"+id);b.textContent="জমা হচ্ছে...";
  try{const u=await up(await shrink(f),"jpg");const{error}=await sb.from("submissions").insert({assignment_id:id,photo_url:u,note:v("sn_"+id)});if(error)throw error;go("hw")}catch(x){alert("জমা হয়নি: "+x.message);b.textContent="জমা দিন"}}
+let TL=null,TI=0,PLAY=false,WAS=false,VOICE="f",ST=0,ANS=null;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const SAMPLE={title:"এক চলকবিশিষ্ট সমীকরণ",steps:[
+{title:"সমীকরণটি দেখি",say:"আসসালামু আলাইকুম, প্রিয় শিক্ষার্থী! আজ আমরা খুব সহজভাবে একটি সমীকরণ সমাধান করতে শিখব। আমাদের সমীকরণটি হলো: দুই এক্স যোগ পাঁচ সমান পনেরো। এখানে এক্স একটি অজানা সংখ্যা। আমাদের কাজ হলো এক্সের মান বের করা।",why:"প্রথমে প্রশ্নটা ভালো করে বুঝলে সমাধান সহজ হয়, তাই আগে দেখে নিই কোনটা জানা আর কোনটা অজানা।",show:"2x + 5 = 15"},
+{title:"প্রথম ধাপ: দুই পাশ থেকে ৫ বিয়োগ",say:"বাম পাশে দুই এক্সের সঙ্গে পাঁচ যোগ করা আছে। এক্সকে একা রাখতে হলে পাঁচ বিয়োগ করতে হবে। ভারসাম্য ঠিক রাখতে ডান পাশ থেকেও পাঁচ বিয়োগ করব। বাম পাশে যোগ পাঁচ আর বিয়োগ পাঁচ কাটাকাটি হয়ে যায়। ডান পাশে পনেরো বিয়োগ পাঁচ হয় দশ। তাই পাই, দুই এক্স সমান দশ।",why:"সমীকরণ একটা দাঁড়িপাল্লার মতো। এক পাশে কিছু করলে অন্য পাশেও একই করতে হয়, নাহলে পাল্লা সমান থাকে না।",show:"2x + 5 − 5 = 15 − 5\n2x = 10"},
+{title:"দ্বিতীয় ধাপ: দুই পাশকে ২ দিয়ে ভাগ",say:"দুই এক্স মানে দুই গুণ এক্স। তাই দুই দিয়ে ভাগ করব। দুই পাশকেই দুই দিয়ে ভাগ করলে বাম পাশে থাকে শুধু এক্স, আর ডান পাশে দশ ভাগ দুই সমান পাঁচ। সুতরাং এক্স সমান পাঁচ।",why:"গুণের উল্টো কাজ ভাগ। তাই ভাগ করলে এক্সের সামনের দুই সরে গিয়ে এক্স একা হয়ে যায়।",show:"2x ÷ 2 = 10 ÷ 2\nx = 5"},
+{title:"তৃতীয় ধাপ: উত্তর যাচাই",say:"এবার মূল সমীকরণে এক্সের জায়গায় পাঁচ বসাই। দুই গুণ পাঁচ হয় দশ, তারপর দশ যোগ পাঁচ হয় পনেরো। দুই পাশই পনেরো, তাই আমাদের উত্তর সঠিক। খুব ভালো!",why:"উত্তর বসিয়ে মেলালে নিশ্চিত হই যে আমাদের হিসাবে ভুল হয়নি।",show:"2×5 + 5 = 15 ✔"}],
+quiz:{q:"যদি 3x + 2 = 11 হয়, তাহলে প্রথমে দুই পাশ থেকে কত বিয়োগ করবে?",options:["২","৩","১১"],answer:0,explain:"এক্সকে একা করতে আগে যোগ করা সংখ্যা ২ বিয়োগ করতে হয়।"}};
+const spk=s=>s.say+(s.why?" এভাবে করলাম কেন? "+s.why:"");
+const aiCall=async(m,t)=>{const{data,error}=await sb.functions.invoke("hyper-handler",{body:{mode:m,text:t}});if(error)throw error;return data.answer||""};
+function stopSpeak(){ST++;try{speechSynthesis.cancel()}catch(e){}}
+function pickV(){const L=speechSynthesis.getVoices().filter(x=>x.lang.replace("_","-").toLowerCase().startsWith("bn"));if(!L.length)return null;const nm=x=>x.name+x.voiceURI;
+ const f=VOICE=="m"?L.find(x=>/male/i.test(nm(x))&&!/female/i.test(nm(x))):L.find(x=>/female|woman/i.test(nm(x)));return f||L[VOICE=="m"&&L.length>1?1:0]}
+function say(t,done){if(!window.speechSynthesis)return alert("এই ফোনে কণ্ঠ সমর্থিত নয়");stopSpeak();const my=ST,u=new SpeechSynthesisUtterance(t);u.lang="bn-BD";u.rate=.9;u.pitch=VOICE=="m"?.7:1.15;const v=pickV();if(v)u.voice=v;
+ const fin=()=>{if(my===ST&&done)done()};u.onend=fin;u.onerror=fin;speechSynthesis.speak(u)}
+function tcLoad(l){TL=l;TI=0;PLAY=false;WAS=false;ANS=null;tcShow()}
+async function tcMake(){const t=v("tpc");if(!t)return alert("পাঠের বিষয় লিখুন");const b=$("tgb");b.textContent="পাঠ তৈরি হচ্ছে...";
+ const p='Make a short lesson for a Bangladeshi student, class '+v("tcl")+', subject '+$("tsb").value+', topic "'+t.slice(0,100)+'". Reply ONLY valid JSON, no markdown: {"title":"","steps":[{"title":"ধাপের নাম","say":"শিক্ষিকার কথা, সহজ বাংলায় ২-৪ বাক্য, সংখ্যা ও চিহ্ন কথায় লিখবে যেমন দুই এক্স যোগ পাঁচ সমান পনেরো","why":"এই ধাপ বা সূত্র কেন ব্যবহার করলাম, খুব সহজ ভাষায় এক-দুই বাক্যে","show":"পর্দায় দেখানোর সমীকরণ বা মূল পয়েন্ট"}],"quiz":{"q":"","options":["","",""],"answer":0,"explain":""}}. 4 to 6 steps, first step starts with Assalamu Alaikum. Bengali only.';
+ try{const x=await aiCall("q",p),j=JSON.parse(x.slice(x.indexOf("{"),x.lastIndexOf("}")+1));if(!j.steps?.length)throw 0;tcLoad(j)}catch(e){alert("পাঠ তৈরি হয়নি, আবার চেষ্টা করুন")}b.textContent="পাঠ তৈরি করুন"}
+function tcShow(){if(!TL||!$("tbox"))return;const n=TL.steps.length,b=$("tbox");
+ const vs=`<div class="c" style="padding:10px"><div class="row"><select onchange="VOICE=this.value"><option value="f" ${VOICE=="f"?"selected":""}>👩 মেয়েলি কণ্ঠ</option><option value="m" ${VOICE=="m"?"selected":""}>👨 পুরুষ কণ্ঠ</option></select>${TI<n?(PLAY?'<button onclick="tcPause()" style="background:#d64545">⏸ ক্লাস থামান</button>':'<button onclick="tcPlay()">▶ ক্লাস চালু করুন</button>'):""}</div></div>`;
+ if(TI<n){const s=TL.steps[TI];b.innerHTML=vs+`<div class="c"><div class="mu">${e(TL.title)} · ধাপ ${TI+1}/${n}</div><div class="bar"><i style="width:${(TI+1)*100/(n+1)}%"></i></div><h3>${e(s.title)}</h3>${s.show?`<div class="m" style="font-size:20px;text-align:center;white-space:pre-wrap">${e(s.show)}</div>`:""}<div style="margin:8px 0">${e(s.say)}</div>${s.why?`<div class="hw">💡 কেন এভাবে? ${e(s.why)}</div>`:""}
+ <div class="row" style="margin-top:8px"><button class="g" onclick="say(spk(TL.steps[TI]))">🔊 এই ধাপ শুনুন</button><button class="g" onclick="stopSpeak()">⏹ থামুন</button></div></div>
+ <div class="c"><b>❓ প্রশ্ন আছে?</b><div class="mu">প্রশ্ন করলে ক্লাস থেমে যাবে, উত্তরের পর আবার আগের পাঠ থেকে চলবে।</div><input id="tq" placeholder="প্রশ্ন লিখুন বা মাইক চাপুন"><div class="row" style="margin-top:8px"><button class="g" id="tmic" onclick="tcMic()">🎙️ বলে প্রশ্ন</button><button onclick="tcAsk()">পাঠান</button></div>
+ ${ANS?`<div class="m" style="margin-top:10px"><div class="mu">তোমার প্রশ্ন: ${e(ANS.q)}</div><div style="white-space:pre-wrap;margin-top:4px">${e(ANS.a)}</div></div>`:""}</div>
+ <div class="row"><button class="g" onclick="tcGo(-1)">⬅ আগের</button><button onclick="tcGo(1)">${TI==n-1?"অনুশীলন ➡":"পরের ➡"}</button></div>`}
+ else{const q=TL.quiz||{};b.innerHTML=vs+`<div class="c"><div class="mu">অনুশীলন</div><h3>${e(q.q||"")}</h3>${(q.options||[]).map((o,i)=>`<button class="g full" onclick="tcQz(${i})">${e(o)}</button>`).join("")}<div id="tres" class="m" style="display:none"></div>
+ <div class="row" style="margin-top:12px"><button class="g" onclick="tcGo(-1)">⬅ আগের</button><button onclick="TI=0;ANS=null;tcShow()">আবার শুরু</button></div></div>`}}
+function tcPlay(){PLAY=true;WAS=false;tcShow();tcStep()}
+function tcPause(){PLAY=false;WAS=false;stopSpeak();tcShow()}
+function tcStep(){if(!PLAY)return;if(TI>=TL.steps.length){PLAY=false;tcShow();say("এবার নিচের অনুশীলন প্রশ্নটির উত্তর দাও।");return}
+ say(spk(TL.steps[TI]),()=>{if(!PLAY)return;setTimeout(()=>{if(!PLAY)return;TI++;ANS=null;tcShow();tcStep()},700)})}
+function tcGo(d){PLAY=false;WAS=false;stopSpeak();ANS=null;TI=Math.max(0,Math.min(TL.steps.length,TI+d));tcShow()}
+function tcQz(i){const q=TL.quiz,r=$("tres"),ok=i==q.answer;r.style.display="block";r.innerHTML=(ok?"✅ সঠিক! ":"❌ আবার ভাবো। ")+e(q.explain||"");say(ok?"সঠিক হয়েছে। খুব ভালো!":"আবার চেষ্টা করো।")}
+function tcMic(){if(!SR)return alert("এই ব্রাউজারে বলে প্রশ্ন চলে না। Android-এর Chrome ব্যবহার করুন, অথবা লিখে প্রশ্ন করুন।");if(PLAY)WAS=true;PLAY=false;stopSpeak();
+ const r=new SR();r.lang="bn-BD";r.onresult=ev=>{$("tq").value=ev.results[0][0].transcript;tcAsk()};r.onerror=()=>{$("tmic").textContent="🎙️ বলে প্রশ্ন";alert("শুনতে পাইনি। মাইকের অনুমতি দিন বা আবার চেষ্টা করুন")};r.onend=()=>{if($("tmic"))$("tmic").textContent="🎙️ বলে প্রশ্ন"};r.start();$("tmic").textContent="🎙️ শুনছি..."}
+async function tcAsk(){const q=v("tq");if(!q)return;if(PLAY)WAS=true;PLAY=false;stopSpeak();const s=TL.steps[TI];ANS={q,a:"ভাবছি..."};tcShow();
+ try{ANS.a=await aiCall("q","আমরা পড়ছি: "+TL.title.slice(0,80)+"। এই ধাপ: "+s.say.slice(0,350)+" ছাত্রের প্রশ্ন: "+q.slice(0,300)+" । খুব সহজ বাংলায় কারণসহ ছোট উত্তর দাও, সংখ্যা ও চিহ্ন কথায় লেখো।")}catch(x){ANS.a="উত্তর পাওয়া যায়নি, আবার চেষ্টা করুন"}
+ tcShow();say(ANS.a,()=>{if(!WAS)return;WAS=false;say("চলো, আগের পাঠে ফিরে যাই।",()=>{PLAY=true;ANS=null;tcShow();tcStep()})})}
 function pickP(i){const f=i.files[0];photo=null;if(f)shrink(f).then(b=>photo=b)}
 async function saveRep(){const b=$("sv");if(!v("sid")||!v("tl"))return alert("ছাত্র ও আজকের পড়া লিখুন");b.textContent="সেভ হচ্ছে...";
  try{let u=null;if(photo)u=await up(photo,"jpg");
