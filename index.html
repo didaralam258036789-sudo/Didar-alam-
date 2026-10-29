@@ -180,7 +180,14 @@ const aiCall=async(m,t)=>{const{data,error}=await sb.functions.invoke("hyper-han
 function stopSpeak(){ST++;try{speechSynthesis.cancel()}catch(e){}}
 function pickV(){const L=speechSynthesis.getVoices().filter(x=>x.lang.replace("_","-").toLowerCase().startsWith("bn"));if(!L.length)return null;const nm=x=>x.name+x.voiceURI;
  const f=VOICE=="m"?L.find(x=>/male/i.test(nm(x))&&!/female/i.test(nm(x))):L.find(x=>/female|woman/i.test(nm(x)));return f||L[VOICE=="m"&&L.length>1?1:0]}
-function say(t,done){if(!window.speechSynthesis)return alert("এই ফোনে কণ্ঠ সমর্থিত নয়");stopSpeak();const my=ST,u=new SpeechSynthesisUtterance(t);u.lang="bn-BD";u.rate=.9;u.pitch=VOICE=="m"?.7:1.15;const v=pickV();if(v)u.voice=v;
+const clean=t=>String(t==null?"":t)
+ .replace(/\(রা\.\)/g,"রাদিয়াল্লাহু আনহু").replace(/\(রহ\.\)/g,"রাহিমাহুল্লাহ")
+ .replace(/∠/g," কোণ ").replace(/⟂/g," লম্ব ").replace(/∥/g," সমান্তরাল ").replace(/△/g," ত্রিভুজ ").replace(/°/g," ডিগ্রি ")
+ .replace(/×/g," গুণ ").replace(/÷/g," ভাগ ").replace(/≠/g," সমান নয় ").replace(/=/g," সমান ").replace(/\+/g," যোগ ").replace(/−/g," বিয়োগ ")
+ .replace(/[→⇒➡]/g,", তাই ").replace(/[—–]/g,", ").replace(/\s-\s/g,", ").replace(/…/g,", ")
+ .replace(/[\u{1F000}-\u{1FAFF}\u{2190}-\u{21FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]/gu,"")
+ .replace(/[*#_`~^|<>{}\[\]\\\/()"'“”‘’•·]/g," ").replace(/\s+/g," ").trim();
+function say(t,done){if(!window.speechSynthesis)return alert("এই ফোনে কণ্ঠ সমর্থিত নয়");stopSpeak();const my=ST,u=new SpeechSynthesisUtterance(clean(t));u.lang="bn-BD";u.rate=.9;u.pitch=VOICE=="m"?.7:1.15;const v=pickV();if(v)u.voice=v;
  const fin=()=>{if(my===ST&&done)done()};u.onend=fin;u.onerror=fin;speechSynthesis.speak(u)}
 function tcLoad(l){TL=l;TI=0;PLAY=false;WAS=false;ANS=null;tcShow()}
 async function tcMake(){const t=v("tpc");if(!t)return alert("পাঠের বিষয় লিখুন");const b=$("tgb");b.textContent="পাঠ তৈরি হচ্ছে...";
@@ -440,7 +447,7 @@ const PPL={"সাহাবী ও সাহাবিয়া":["আবু ব�
 "কাল্পনিক শিক্ষণীয় গল্প":["কাল্পনিক চরিত্র"]};
 const THM=["সততা","ধৈর্য","মা-বাবার সেবা","ইলম অর্জন","দানশীলতা","ক্ষমা","আমানতদারি","বিনয়","সময়ের মূল্য","আল্লাহর ওপর ভরসা","বন্ধুত্ব ও সদাচার","সত্যবাদিতা","পরিশ্রম"];
 let LNS="ar",LC=null,LQ=[],LI=0,LP=false,XA=null,SHR="",WARN={};
-function sayL(t,l,done){if(!window.speechSynthesis)return alert("এই ফোনে কণ্ঠ সমর্থিত নয়");stopSpeak();const my=ST,u=new SpeechSynthesisUtterance(t);u.lang=l;u.rate=.85;
+function sayL(t,l,done){if(!window.speechSynthesis)return alert("এই ফোনে কণ্ঠ সমর্থিত নয়");stopSpeak();const my=ST,u=new SpeechSynthesisUtterance(clean(t));u.lang=l;u.rate=.85;
  if(l=="bn-BD"){u.pitch=VOICE=="m"?.7:1.15;const b=pickV();if(b)u.voice=b}else{const p=l.slice(0,2),vs=speechSynthesis.getVoices().filter(x=>x.lang.replace("_","-").toLowerCase().startsWith(p));if(vs.length)u.voice=vs[0];else if(!WARN[p]){WARN[p]=1;alert("এই ফোনে এই ভাষার কণ্ঠ নেই বলে উচ্চারণ ঠিক নাও হতে পারে। ফোনের Settings → Text-to-speech এ ভাষাটি ডাউনলোড করুন।")}}
  const fin=()=>{if(my===ST&&done)done()};u.onend=fin;u.onerror=fin;speechSynthesis.speak(u)}
 const shr=t=>navigator.share?navigator.share({text:t}).catch(()=>{}):navigator.clipboard.writeText(t).then(()=>alert("কপি হয়েছে"));
