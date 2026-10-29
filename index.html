@@ -348,6 +348,42 @@ tri_rhs:{n:"সমকোণী ত্রিভুজ (অতিভুজ ও এ
 {t:"B বিন্দুতে BC-এর ওপর লম্ব BX আঁকি (∠CBX = ৯০°)।",e:[SG(B,[0,A[1]*1.2],"d"),RA(B,[1,0],[0,1])]},
 {t:`C-কে কেন্দ্র করে ${nn(h)} সেমি ব্যাসার্ধ নিয়ে চাপ আঁকি, যা BX-কে A বিন্দুতে ছেদ করে।`,why:"তাহলে অতিভুজ AC ঠিক h সেমি হয়।",e:[around(C,h,A),PT(A,"A")]},
 {t:"AB ও AC যোগ করি। ABC-ই নির্ণেয় সমকোণী ত্রিভুজ।",e:[SG(A,B,"m"),SG(A,C,"m")]}],proof:`অঙ্কন অনুযায়ী ∠B = ৯০°, BC = ${nn(a)} সেমি ও AC = ${nn(h)} সেমি। পীথাগোরাসের সূত্রে AB = ${nn(A[1])} সেমি।`}}},
+tri_sum:{n:"ভূমি, ভূমি-সংলগ্ন কোণ ও অপর দুই বাহুর সমষ্টি দেওয়া ত্রিভুজ",f:[["a","ভূমি BC (সেমি)",5],["be","ভূমি-সংলগ্ন কোণ ∠B (ডিগ্রি)",60],["s","AB + AC (সেমি)",9]],b(p){const{a,be,s}=p;if(!(a>0&&s>0&&be>0&&be<180))throw Error("মাপ ঠিক নয়");if(s<=a)throw Error("ত্রিভুজ হয় না: দুই বাহুর সমষ্টি ভূমির চেয়ে বড় হতে হবে");
+ const r=be*D2R,B=[0,0],C=[a,0],D=pol(B,s,r),x=(a*a+s*s-2*a*s*Math.cos(r))/(2*(s-a*Math.cos(r))),A=pol(B,s-x,r),M=mid(C,D);
+ return{given:`ত্রিভুজ ABC-এর ভূমি BC = ${nn(a)} সেমি, ∠B = ${nn(be)}° এবং AB + AC = ${nn(s)} সেমি।`,steps:[
+ {t:`একটি রেখাংশ BC = ${nn(a)} সেমি আঁকি।`,e:[SG(B,C,"m"),PT(B,"B"),PT(C,"C")]},
+ {t:`B বিন্দুতে BC-এর সাথে ${nn(be)}° কোণ করে BX রশ্মি আঁকি।`,e:[SG(B,pol(B,s*1.1,r),"d"),AM(B,0,r,nn(be)+"°")]},
+ {t:`BX রশ্মি থেকে BD = ${nn(s)} সেমি (AB + AC-এর সমান) কেটে নিই।`,why:"তাহলে BD = AB + AC হবে।",e:[around(B,s,D,.12),PT(D,"D")]},
+ {t:"CD যোগ করি।",e:[SG(C,D,"c")]},
+ {t:"CD-এর লম্বদ্বিখণ্ডক আঁকি, যা BD-কে A বিন্দুতে ছেদ করে।",why:"লম্বদ্বিখণ্ডকের ওপরের যেকোনো বিন্দু C ও D থেকে সমান দূরে থাকে, তাই AC = AD হবে।",e:[SG(M,A,"c"),RA(M,unit(M,D),unit(M,A)),PT(A,"A")]},
+ {t:"AC যোগ করি। ABC-ই নির্ণেয় ত্রিভুজ।",e:[SG(A,B,"m"),SG(A,C,"m"),SG(B,C,"m")]}],proof:`A বিন্দু CD-এর লম্বদ্বিখণ্ডকের ওপর, তাই AC = AD। অতএব AB + AC = AB + AD = BD = ${nn(s)} সেমি। আবার BC = ${nn(a)} সেমি ও ∠B = ${nn(be)}°। সুতরাং ABC-ই নির্ণেয় ত্রিভুজ।`}}},
+tri_diff1:{n:"ভূমি, ভূমি-সংলগ্ন কোণ ও অপর দুই বাহুর অন্তর দেওয়া ত্রিভুজ (AB > AC)",f:[["a","ভূমি BC (সেমি)",6],["be","ভূমি-সংলগ্ন কোণ ∠B (ডিগ্রি)",50],["d","AB − AC (সেমি)",2]],b(p){const{a,be,d}=p;if(!(a>0&&d>0&&be>0&&be<180))throw Error("মাপ ঠিক নয়");const r=be*D2R;if(!(d<a*Math.cos(r)))throw Error("এই মাপে ত্রিভুজ হয় না: অন্তর অবশ্যই ভূমি × cos B-এর চেয়ে ছোট হতে হবে");
+ const B=[0,0],C=[a,0],y=(a*a-d*d)/(2*(a*Math.cos(r)-d)),A=pol(B,y,r),D=pol(B,d,r),M=mid(C,D);
+ return{given:`ত্রিভুজ ABC-এর ভূমি BC = ${nn(a)} সেমি, ∠B = ${nn(be)}° এবং AB − AC = ${nn(d)} সেমি (AB > AC)।`,steps:[
+ {t:`একটি রেখাংশ BC = ${nn(a)} সেমি আঁকি।`,e:[SG(B,C,"m"),PT(B,"B"),PT(C,"C")]},
+ {t:`B বিন্দুতে BC-এর সাথে ${nn(be)}° কোণ করে BX রশ্মি আঁকি।`,e:[SG(B,pol(B,y*1.15,r),"d"),AM(B,0,r,nn(be)+"°")]},
+ {t:`BX রশ্মি থেকে BD = ${nn(d)} সেমি (অন্তরের সমান) কেটে নিই।`,why:"তাহলে BD = AB − AC হবে।",e:[around(B,d,D,.3),PT(D,"D")]},
+ {t:"CD যোগ করি।",e:[SG(C,D,"c")]},
+ {t:"CD-এর লম্বদ্বিখণ্ডক আঁকি, যা BX রশ্মিকে (D-এর পরে) A বিন্দুতে ছেদ করে।",why:"লম্বদ্বিখণ্ডকের ওপরের বিন্দু C ও D থেকে সমান দূরে থাকে, তাই AC = AD হবে।",e:[SG(M,A,"c"),RA(M,unit(M,D),unit(M,A)),PT(A,"A")]},
+ {t:"AC যোগ করি। ABC-ই নির্ণেয় ত্রিভুজ।",e:[SG(A,B,"m"),SG(A,C,"m"),SG(B,C,"m")]}],proof:`A বিন্দু CD-এর লম্বদ্বিখণ্ডকের ওপর, তাই AC = AD। এখন AB = BD + DA = ${nn(d)} + AC। অতএব AB − AC = ${nn(d)} সেমি। আবার BC = ${nn(a)} সেমি ও ∠B = ${nn(be)}°। সুতরাং ABC-ই নির্ণেয় ত্রিভুজ।`}}},
+tri_diff2:{n:"ভূমি, ভূমি-সংলগ্ন কোণ ও অপর দুই বাহুর অন্তর দেওয়া ত্রিভুজ (AC > AB)",f:[["a","ভূমি BC (সেমি)",5],["be","ভূমি-সংলগ্ন কোণ ∠B (ডিগ্রি)",60],["d","AC − AB (সেমি)",2]],b(p){const{a,be,d}=p;if(!(a>0&&d>0&&be>0&&be<180))throw Error("মাপ ঠিক নয়");const r=be*D2R;if(!(d<a&&d+a*Math.cos(r)>0))throw Error("এই মাপে ত্রিভুজ হয় না: অন্তর ভূমির চেয়ে ছোট হতে হবে (কোণ খুব বড় হলেও হয় না)");
+ const B=[0,0],C=[a,0],y=(a*a-d*d)/(2*(d+a*Math.cos(r))),A=pol(B,y,r),D=pol(B,d,r+Math.PI),M=mid(C,D);
+ return{given:`ত্রিভুজ ABC-এর ভূমি BC = ${nn(a)} সেমি, ∠B = ${nn(be)}° এবং AC − AB = ${nn(d)} সেমি (AC > AB)।`,steps:[
+ {t:`একটি রেখাংশ BC = ${nn(a)} সেমি আঁকি।`,e:[SG(B,C,"m"),PT(B,"B"),PT(C,"C")]},
+ {t:`B বিন্দুতে BC-এর সাথে ${nn(be)}° কোণ করে BX রশ্মি আঁকি।`,e:[SG(B,pol(B,y*1.2,r),"d"),AM(B,0,r,nn(be)+"°")]},
+ {t:`XB রশ্মিকে B-এর বিপরীত দিকে বাড়াই এবং তা থেকে BD = ${nn(d)} সেমি (অন্তরের সমান) কেটে নিই।`,why:"তাহলে D, B, A একই সরলরেখায় থাকবে এবং BD = AC − AB হবে।",e:[SG(B,pol(B,d*1.3,r+Math.PI),"d"),around(B,d,D,.3),PT(D,"D")]},
+ {t:"CD যোগ করি।",e:[SG(C,D,"c")]},
+ {t:"CD-এর লম্বদ্বিখণ্ডক আঁকি, যা BX রশ্মিকে A বিন্দুতে ছেদ করে।",why:"লম্বদ্বিখণ্ডকের ওপরের বিন্দু C ও D থেকে সমান দূরে থাকে, তাই AC = AD হবে।",e:[SG(M,A,"c"),RA(M,unit(M,D),unit(M,A)),PT(A,"A")]},
+ {t:"AB ও AC যোগ করি। ABC-ই নির্ণেয় ত্রিভুজ।",e:[SG(A,B,"m"),SG(A,C,"m"),SG(B,C,"m")]}],proof:`A বিন্দু CD-এর লম্বদ্বিখণ্ডকের ওপর, তাই AC = AD। কিন্তু D, B, A একই সরলরেখায় বলে AD = AB + BD = AB + ${nn(d)}। অতএব AC − AB = ${nn(d)} সেমি। আবার BC = ${nn(a)} সেমি ও ∠B = ${nn(be)}°। সুতরাং ABC-ই নির্ণেয় ত্রিভুজ।`}}},
+tri_perim:{n:"ভূমি-সংলগ্ন দুটি কোণ ও পরিসীমা দেওয়া ত্রিভুজ",f:[["be","∠B (ডিগ্রি)",60],["g","∠C (ডিগ্রি)",50],["p","পরিসীমা AB + BC + CA (সেমি)",14]],b(p){const be=p.be,g=p.g,L=p.p;if(!(be>0&&g>0&&L>0))throw Error("মাপ শূন্যের চেয়ে বড় হতে হবে");if(be+g>=180)throw Error("দুই কোণের যোগফল ১৮০°-এর কম হতে হবে");
+ const P=[0,0],Q=[L,0],h1=be*D2R/2,h2=g*D2R/2,k=Math.sin(h1+h2),AP=L*Math.sin(h2)/k,AQ=L*Math.sin(h1)/k,A=pol(P,AP,h1),B=[AP/2/Math.cos(h1),0],C=[L-AQ/2/Math.cos(h2),0],M1=mid(A,P),M2=mid(A,Q);
+ return{given:`ত্রিভুজ ABC-এর ∠B = ${nn(be)}°, ∠C = ${nn(g)}° এবং পরিসীমা AB + BC + CA = ${nn(L)} সেমি।`,steps:[
+ {t:`একটি রেখাংশ PQ = ${nn(L)} সেমি (পরিসীমার সমান) আঁকি।`,e:[SG(P,Q,"m"),PT(P,"P"),PT(Q,"Q")]},
+ {t:`P বিন্দুতে PQ-এর সাথে ∠B-এর অর্ধেক, অর্থাৎ ${nn(be/2)}° কোণ করে PX রশ্মি আঁকি।`,e:[SG(P,pol(P,AP*1.2,h1),"d"),AM(P,0,h1,nn(be/2)+"°")]},
+ {t:`Q বিন্দুতে QP-এর সাথে ∠C-এর অর্ধেক, অর্থাৎ ${nn(g/2)}° কোণ করে QY রশ্মি আঁকি। PX ও QY রশ্মি A বিন্দুতে ছেদ করে।`,e:[SG(Q,pol(Q,AQ*1.2,Math.PI-h2),"d"),AM(Q,Math.PI-h2,Math.PI,nn(g/2)+"°"),PT(A,"A")]},
+ {t:"AP-এর লম্বদ্বিখণ্ডক আঁকি, যা PQ-কে B বিন্দুতে ছেদ করে।",why:"তাহলে BA = BP হবে।",e:[SG(M1,B,"c"),RA(M1,unit(M1,A),unit(M1,B)),PT(B,"B")]},
+ {t:"AQ-এর লম্বদ্বিখণ্ডক আঁকি, যা PQ-কে C বিন্দুতে ছেদ করে।",why:"তাহলে CA = CQ হবে।",e:[SG(M2,C,"c"),RA(M2,unit(M2,A),unit(M2,C)),PT(C,"C")]},
+ {t:"AB ও AC যোগ করি। ABC-ই নির্ণেয় ত্রিভুজ।",e:[SG(A,B,"m"),SG(A,C,"m"),SG(B,C,"m")]}],proof:`B বিন্দু AP-এর লম্বদ্বিখণ্ডকের ওপর, তাই BA = BP এবং ∠BAP = ∠BPA = ${nn(be/2)}°। বহিঃস্থ কোণ ∠ABC = ∠BAP + ∠BPA = ${nn(be)}°। একইভাবে CA = CQ এবং ∠ACB = ${nn(g)}°। অতএব AB + BC + CA = PB + BC + CQ = PQ = ${nn(L)} সেমি।`}}},
 perp_bisector:{n:"রেখাংশের লম্বদ্বিখণ্ডক",f:[["L","রেখাংশ AB (সেমি)",6]],b(p){const L=p.L;if(!(L>0))throw Error("মাপ শূন্যের চেয়ে বড় হতে হবে");const A=[0,0],B=[L,0],r=L*.75,h=Math.sqrt(r*r-L*L/4),P=[L/2,h],Q=[L/2,-h],M=[L/2,0];return{given:`রেখাংশ AB = ${nn(L)} সেমি।`,steps:[
 {t:`একটি রেখাংশ AB = ${nn(L)} সেমি আঁকি।`,e:[SG(A,B,"m"),PT(A,"A"),PT(B,"B")]},
 {t:`A-কে কেন্দ্র করে AB-এর অর্ধেকের চেয়ে বড় ব্যাসার্ধ (যেমন ${nn(r)} সেমি) নিয়ে AB-এর ওপরে ও নিচে দুটি চাপ আঁকি।`,e:[around(A,r,P,.3),around(A,r,Q,.3)]},
@@ -412,21 +448,75 @@ function gSvg(G,upto){const W=360,H=300,pd=28,all=[];G.steps.forEach(st=>st.e.fo
   else if(el.k=="am"){const px=X(el.p[0]),py=Y(el.p[1]),a=[];for(let j=0;j<=16;j++){const t=el.a0+(el.a1-el.a0)*j/16;a.push((px+20*Math.cos(t)).toFixed(1)+","+(py-20*Math.sin(t)).toFixed(1))}const m=(el.a0+el.a1)/2;o+=`<polyline points="${a.join(" ")}" style="fill:none;stroke:${col};stroke-width:1.2"/>`+(el.l?`<text x="${(px+32*Math.cos(m)-6).toFixed(1)}" y="${(py-32*Math.sin(m)+4).toFixed(1)}" font-size="11" style="fill:${col}">${el.l}</text>`:"")}
  })});
  return`<svg viewBox="0 0 ${W} ${H}" style="width:100%;background:var(--cd);border:1px solid var(--bd);border-radius:12px">${o}</svg>`}
-const GRP={"ত্রিভুজ অঙ্কন":["tri_sss","tri_sas","tri_asa","tri_rhs"],"রেখা ও কোণ":["perp_bisector","angle_bisector","perp_from_point","parallel","divide_n"],"বৃত্ত ও বহুভুজ":["circumcircle","incircle","tangent","hexagon"]};
+const GRP={"ত্রিভুজ অঙ্কন":["tri_sss","tri_sas","tri_asa","tri_rhs","tri_sum","tri_diff1","tri_diff2","tri_perim"],"রেখা ও কোণ":["perp_bisector","angle_bisector","perp_from_point","parallel","divide_n"],"বৃত্ত ও বহুভুজ":["circumcircle","incircle","tangent","hexagon"]};
 function geoHome(){$("main").innerHTML=`<div class="c"><b>📐 জ্যামিতি অঙ্কন</b><div class="mu">ধাপে ধাপে নিখুঁত মাপে চিত্র আঁকে, খাতার নিয়মে লেখা দেখায়, কণ্ঠে বুঝিয়ে বলে।</div><label>অঙ্কনের ধরন</label><select id="gtype" onchange="geoFields()">${Object.entries(GRP).map(([g,l])=>`<optgroup label="${g}">${l.map(k=>`<option value="${k}">${GD[k].n}</option>`).join("")}</optgroup>`).join("")}</select><div id="gf"></div><button class="full" onclick="geoDraw()">আঁকো</button></div>
- <div class="c"><b>✍️ প্রশ্ন লিখে আঁকাও</b><textarea id="gai" placeholder="যেমন: ৫ সেমি, ৬ সেমি ও ৭ সেমি বাহুবিশিষ্ট ত্রিভুজ আঁক"></textarea><button class="full g" id="gab" onclick="geoAI()">AI বুঝে আঁকুক</button><div class="mu" style="margin-top:6px">AI শুধু প্রশ্ন থেকে অঙ্কনের ধরন ও মাপ চিনবে। চিত্র আঁকবে অ্যাপ নিজে, তাই মাপ নিখুঁত থাকে।</div></div><div id="gbox"></div>`;geoFields();if(GG)geoShow()}
+ <div class="c"><b>✍️ যেকোনো উপপাদ্য বা সম্পাদ্য লিখুন</b><textarea id="gai" placeholder="যেমন: ৫ সেমি, ৬ সেমি ও ৭ সেমি বাহুবিশিষ্ট ত্রিভুজ আঁক"></textarea><button class="full g" id="gab" onclick="geoAI()">AI বুঝে আঁকুক</button><div class="mu" style="margin-top:6px">তালিকার অঙ্কন হলে সরাসরি আঁকবে। নতুন বা অন্য যেকোনো উপপাদ্য/সম্পাদ্য হলে AI অঙ্কনের পরিকল্পনা লিখবে, অ্যাপ নিজে নিখুঁত মাপে এঁকে প্রতিটি দাবি গাণিতিকভাবে যাচাই করবে।</div></div><div id="gbox"></div>`;geoFields();if(GG)geoShow()}
 function geoFields(){$("gf").innerHTML=GD[v("gtype")].f.map(([k,l,d])=>`<label>${l}</label><input id="gp_${k}" type="number" step="any" value="${d}">`).join("")}
 function geoRun(t,p){const D=GD[t];try{GG=D.b(p);GG.n=D.n;GI=0;GP=false;GW=false;GA=null;stopSpeak();geoShow()}catch(x){alert(x.message)}}
 function geoDraw(){const t=v("gtype"),p={};GD[t].f.forEach(([k])=>p[k]=+v("gp_"+k));geoRun(t,p)}
+function evalChk(ex,P){ex=String(ex||"");if(!/^[A-Za-z0-9_+\-*/(). ,]+$/.test(ex)||/(^|[^0-9])\.|\.($|[^0-9])/.test(ex)||(ex.match(/[A-Za-z_][A-Za-z0-9_]*/g)||[]).some(w=>!/^[A-Z]/.test(w)&&!["dist","ang","abs","sqrt","sin","cos"].includes(w)))throw Error("অবৈধ যাচাই সূত্র");
+ const js=ex.replace(/\b([A-Z][A-Za-z0-9_]*)\b/g,'P["$1"]'),an=(v,p,q)=>{const a=Math.atan2(p[1]-v[1],p[0]-v[0]),b=Math.atan2(q[1]-v[1],q[0]-v[0]);let d=Math.abs(a-b);if(d>Math.PI)d=2*Math.PI-d;return d*180/Math.PI};
+ const r=new Function("P","dist","ang","abs","sqrt","sin","cos","return ("+js+")")(P,dist,an,Math.abs,Math.sqrt,x=>Math.sin(x*D2R),x=>Math.cos(x*D2R));if(!isFinite(r))throw Error("মান পাওয়া যায়নি");return r}
+function runProg(pr){const P={},steps=[],checks=[];
+ const get=n=>{if(!P[n])throw Error("অজানা বিন্দু "+n);return P[n]},num=x=>{const v=+x;if(!isFinite(v))throw Error("সংখ্যা ঠিক নয়");return v};
+ const R=(o,c,rk,tk)=>{const r=o[tk]!=null?dist(get(o[c]),get(o[tk])):num(o[rk]);if(!(r>0))throw Error("ব্যাসার্ধ ঠিক নয়");return r};
+ const pk=(c,o)=>{if(!c.length)throw Error("ছেদবিন্দু নেই");return o.near?c.reduce((a,b)=>dist(a,get(o.near))<=dist(b,get(o.near))?a:b):c[Math.min(+o.i||0,c.length-1)]};
+ const mk=new Set(["pt","polar","rot","mid","aff","perp","pbis","bis","par","ll","lc","cc"]),hid=new Set(["pbis","bis","par","aff"]);
+ try{if(!pr||!Array.isArray(pr.steps)||!pr.steps.length)throw Error("প্রোগ্রামে ধাপ নেই");
+ pr.steps.slice(0,16).forEach(s=>{const E=[];(s.ops||[]).forEach(o=>{
+  if(mk.has(o.op)&&!/^[A-Z][A-Za-z0-9_]*$/.test(String(o.n)))throw Error("বিন্দুর নাম ঠিক নয়: "+o.n);
+  switch(o.op){
+  case"pt":P[o.n]=[num(o.x),num(o.y)];break;
+  case"polar":P[o.n]=pol(get(o.from),num(o.r),num(o.deg)*D2R);break;
+  case"rot":{const c=get(o.c),p=get(o.p),r=o.r!=null?num(o.r):dist(c,p);P[o.n]=pol(c,r,ang(c,p)+num(o.deg)*D2R);break}
+  case"mid":P[o.n]=mid(get(o.a),get(o.b));break;
+  case"aff":{const a=get(o.a),b=get(o.b),k=num(o.k);P[o.n]=[a[0]+k*(b[0]-a[0]),a[1]+k*(b[1]-a[1])];break}
+  case"perp":{const p=get(o.p),a=get(o.a),b=get(o.b),d=[b[0]-a[0],b[1]-a[1]],t=((p[0]-a[0])*d[0]+(p[1]-a[1])*d[1])/(d[0]*d[0]+d[1]*d[1]);P[o.n]=[a[0]+t*d[0],a[1]+t*d[1]];break}
+  case"pbis":{const a=get(o.a),b=get(o.b),m=mid(a,b);P[o.n]=[m[0]-.6*(b[1]-a[1]),m[1]+.6*(b[0]-a[0])];break}
+  case"bis":{const v=get(o.v),a=get(o.a),b=get(o.b),u=unit(v,a),w=unit(v,b);let s=[u[0]+w[0],u[1]+w[1]],l=Math.hypot(s[0],s[1]);if(l<1e-9){s=[-u[1],u[0]];l=1}const k=Math.max(dist(v,a),dist(v,b));P[o.n]=[v[0]+k*s[0]/l,v[1]+k*s[1]/l];break}
+  case"par":{const p=get(o.p),a=get(o.a),b=get(o.b);P[o.n]=[p[0]+b[0]-a[0],p[1]+b[1]-a[1]];break}
+  case"ll":{const[a,b]=o.l1.map(get),[c,d]=o.l2.map(get),r=[b[0]-a[0],b[1]-a[1]],q=[d[0]-c[0],d[1]-c[1]],den=r[0]*q[1]-r[1]*q[0];if(Math.abs(den)<1e-12)throw Error("রেখা দুটি সমান্তরাল, ছেদ করে না");const t=((c[0]-a[0])*q[1]-(c[1]-a[1])*q[0])/den;P[o.n]=[a[0]+t*r[0],a[1]+t*r[1]];break}
+  case"lc":{const a=get(o.l[0]),b=get(o.l[1]),c=get(o.c),r=R(o,"c","r","thr"),d=[b[0]-a[0],b[1]-a[1]],f=[a[0]-c[0],a[1]-c[1]],A=d[0]*d[0]+d[1]*d[1],B=2*(f[0]*d[0]+f[1]*d[1]),C=f[0]*f[0]+f[1]*f[1]-r*r,D=B*B-4*A*C;if(D<-1e-9)throw Error("রেখা ও বৃত্ত ছেদ করে না");const q=Math.sqrt(Math.max(0,D));P[o.n]=pk([(-B-q)/(2*A),(-B+q)/(2*A)].map(t=>[a[0]+t*d[0],a[1]+t*d[1]]),o);break}
+  case"cc":{const c1=get(o.c1),c2=get(o.c2),r1=R(o,"c1","r1","t1"),r2=R(o,"c2","r2","t2"),d=dist(c1,c2);if(d<1e-12||d>r1+r2+1e-9||d<Math.abs(r1-r2)-1e-9)throw Error("দুই বৃত্ত ছেদ করে না");const a=(r1*r1-r2*r2+d*d)/(2*d),h=Math.sqrt(Math.max(0,r1*r1-a*a)),ux=(c2[0]-c1[0])/d,uy=(c2[1]-c1[1])/d,m=[c1[0]+a*ux,c1[1]+a*uy];P[o.n]=pk([[m[0]-h*uy,m[1]+h*ux],[m[0]+h*uy,m[1]-h*ux]],o);break}
+  case"seg":E.push(SG(get(o.a),get(o.b),o.s||"m"));break;
+  case"line":{const a=get(o.a),b=get(o.b);E.push(SG([a[0]-.4*(b[0]-a[0]),a[1]-.4*(b[1]-a[1])],[b[0]+.4*(b[0]-a[0]),b[1]+.4*(b[1]-a[1])],o.s||"c"));break}
+  case"circ":E.push(CI(get(o.c),R(o,"c","r","thr")));break;
+  case"arc":{const c=get(o.c),n=get(o.near),r=o.thr!=null||o.r!=null?R(o,"c","r","thr"):dist(c,n);E.push(AR(c,r,ang(c,n)-.35,ang(c,n)+.35));break}
+  case"show":(o.ns||[]).forEach(n=>E.push(PT(get(n),n)));break;
+  case"ang":{const v=get(o.v),a0=ang(v,get(o.a)),a1=ang(v,get(o.b)),d=((a1-a0+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;E.push(AM(v,a0,a0+d,o.l||""));break}
+  case"ra":{const v=get(o.v);E.push(RA(v,unit(v,get(o.a)),unit(v,get(o.b))));break}
+  case"tick":{const a=get(o.a),b=get(o.b),m=mid(a,b),L=dist(a,b),u=unit(a,b),n=Math.min(3,+o.n||1);for(let i=0;i<n;i++){const off=(i-(n-1)/2)*.07*L,c=[m[0]+off*u[0],m[1]+off*u[1]];E.push(SG([c[0]-.035*L*u[1],c[1]+.035*L*u[0]],[c[0]+.035*L*u[1],c[1]-.035*L*u[0]],"m"))}break}
+  default:throw Error("অজানা অপারেশন: "+o.op)}
+  if(mk.has(o.op)&&!hid.has(o.op)&&!o.hide)E.push(PT(P[o.n],o.n))});
+  steps.push({t:String(s.t||""),why:s.why,e:E})});
+ Object.values(P).forEach(p=>{if(!isFinite(p[0])||!isFinite(p[1]))throw Error("কোনো বিন্দুর মান পাওয়া যায়নি")})}catch(x){return{err:x.message}}
+ (pr.checks||[]).slice(0,10).forEach(c=>{let val=NaN,ok=false;try{val=evalChk(c.e,P);ok=Math.abs(val-+c.v)<=Math.max(.01,.002*Math.abs(+c.v))}catch(x){}checks.push({d:String(c.d||c.e),v:+c.v,val,ok})});
+ return{G:{n:String(pr.title||"অঙ্কন"),given:String(pr.given||""),find:String(pr.find||""),proof:String(pr.proof||""),kind:pr.kind,steps},checks}}
+
+async function geoFree(t){let fb="",last=null;
+ for(let k=0;k<3;k++){
+  const msg=fb?t+"\n\nআগের চেষ্টায় ভুল ধরা পড়েছে: "+fb+"\nআগের প্রোগ্রাম (এটি ঠিক করে সম্পূর্ণ নতুন JSON দাও): "+JSON.stringify(last).slice(0,3000):t;
+  let pr;try{pr=pj(await aiCall("geo",msg))}catch(x){fb="JSON ঠিকমতো আসেনি";continue}
+  last=pr;const r=runProg(pr);if(r.err){fb=r.err;continue}
+  const bad=r.checks.filter(c=>!c.ok);
+  if(!bad.length||k==2)return{G:r.G,checks:r.checks,bad:bad.length};
+  fb="যাচাই মেলেনি: "+bad.map(c=>c.d+" (পাওয়া গেছে "+f2(c.val)+", হওয়ার কথা "+c.v+")").join("; ")}
+ return null}
 async function geoAI(){const t=v("gai");if(!t)return alert("প্রশ্ন লিখুন");const b=$("gab");b.textContent="বুঝছি...";
- const q='Classify this Bengali geometry construction request into ONE type and extract numbers (cm or degrees). Types and params: tri_sss(a=BC,b=CA,c=AB), tri_sas(b=AC,c=AB,al=angle A), tri_asa(be=angle B,g=angle C,a=BC), tri_rhs(h=hypotenuse,a=other side), perp_bisector(L), angle_bisector(th), perp_from_point(d), parallel(d), divide_n(L,n), circumcircle(a,b,c), incircle(a,b,c), tangent(r,d), hexagon(r). Reply ONLY JSON {"type":"...","p":{...}} or {"type":"none"}. Request: '+t.slice(0,300);
- try{const j=pj(await aiCall("q",q));if(!GD[j.type]){alert("এই ধরনের অঙ্কন এখনো যোগ হয়নি। উপরের তালিকা থেকে বেছে নিন।")}else{$("gtype").value=j.type;geoFields();GD[j.type].f.forEach(([k])=>{if(j.p&&j.p[k]!=null)$("gp_"+k).value=j.p[k]});const p={};GD[j.type].f.forEach(([k])=>p[k]=+v("gp_"+k));geoRun(j.type,p)}}catch(x){alert("বুঝতে পারিনি, উপরের ফর্মে মাপ দিয়ে চেষ্টা করুন")}b.textContent="AI বুঝে আঁকুক"}
+ const q='Classify this Bengali geometry request into ONE type ONLY if it is EXACTLY that construction, else reply none (theorems, proofs, and any other construction are none). Types and params: tri_sss(a=BC,b=CA,c=AB), tri_sas(b=AC,c=AB,al=angle A), tri_asa(be=angle B,g=angle C,a=BC), tri_rhs(h=hypotenuse,a=other side), tri_sum(a=BC,be=angle B,s=AB+AC), tri_diff1(a=BC,be=angle B,d=AB-AC where AB>AC), tri_diff2(a=BC,be=angle B,d=AC-AB where AC>AB), tri_perim(be=angle B,g=angle C,p=perimeter), perp_bisector(L), angle_bisector(th), perp_from_point(d), parallel(d), divide_n(L,n), circumcircle(a,b,c), incircle(a,b,c), tangent(r,d), hexagon(r). Reply ONLY JSON {"type":"...","p":{...}} or {"type":"none"}. Request: '+t.slice(0,400);
+ let j=null;try{j=pj(await aiCall("q",q))}catch(x){}
+ if(j&&GD[j.type]){try{$("gtype").value=j.type;geoFields();GD[j.type].f.forEach(([k])=>{if(j.p&&j.p[k]!=null)$("gp_"+k).value=j.p[k]});const p={};GD[j.type].f.forEach(([k])=>p[k]=+v("gp_"+k));geoRun(j.type,p)}catch(x){alert("মাপ ঠিক করে আবার চেষ্টা করুন")}b.textContent="AI বুঝে আঁকুক";return}
+ $("gbox").innerHTML='<div class="c">অঙ্কন তৈরি ও গাণিতিকভাবে যাচাই হচ্ছে... (১ মিনিট পর্যন্ত লাগতে পারে)</div>';
+ const r=await geoFree(t.slice(0,1500));
+ if(!r){$("gbox").innerHTML='<div class="c">অঙ্কনটি তৈরি করা যায়নি। প্রশ্নটি আরও স্পষ্ট করে লিখে আবার চেষ্টা করুন। (সমস্যা বারবার হলে Supabase-এর hyper-handler ফাংশন নতুন কোডে আপডেট করা আছে কিনা দেখুন।)</div>'}
+ else{GG=r.G;GG.checks=r.checks;GG.warn=r.bad?"এই চিত্র যাচাইয়ে পুরোপুরি মেলেনি, তাই ভুল থাকতে পারে। খাতায় আঁকার আগে বইয়ের সাথে মিলিয়ে নাও।":(r.checks.length<2?"পর্যাপ্ত যাচাই সূত্র ছিল না, তাই চিত্রটি পুরোপুরি যাচাইকৃত নয়।":"");GI=0;GP=false;GW=false;GA=null;stopSpeak();geoShow()}
+ b.textContent="AI বুঝে আঁকুক"}
 function geoShow(){if(!GG||!$("gbox"))return;const G=GG,n=G.steps.length,s=G.steps[GI];
- $("gbox").innerHTML=`<div class="c"><b>${e(G.n)}</b><div class="mu">${e(G.given)}</div>${gSvg(G,GI)}<div class="mu" style="margin-top:6px">ধাপ ${nc(GI+1)}/${nc(n)}</div><div style="margin:4px 0">${e(s.t)}</div>${s.why?`<div class="hw">💡 ${e(s.why)}</div>`:""}
+ $("gbox").innerHTML=`<div class="c"><b>${e(G.n)}</b><div class="mu">${e(G.given)}</div>${G.find?`<div class="mu"><b>প্রমাণ/নির্ণেয়:</b> ${e(G.find)}</div>`:""}${gSvg(G,GI)}<div class="mu" style="margin-top:6px">ধাপ ${nc(GI+1)}/${nc(n)}</div><div style="margin:4px 0">${e(s.t)}</div>${s.why?`<div class="hw">💡 ${e(s.why)}</div>`:""}
  <div class="row" style="margin-top:8px"><select onchange="VOICE=this.value"><option value="f" ${VOICE=="f"?"selected":""}>👩 মেয়েলি কণ্ঠ</option><option value="m" ${VOICE=="m"?"selected":""}>👨 পুরুষ কণ্ঠ</option></select>${GP?'<button onclick="gPause()" style="background:#d64545">⏸ থামান</button>':'<button onclick="gPlay()">▶ বুঝিয়ে বলো</button>'}</div>
  <div class="row" style="margin-top:8px"><button class="g" onclick="gGo(-1)">⬅ আগের</button><button class="g" onclick="gGo(1)">পরের ➡</button></div></div>
  <div class="c"><b>❓ বুঝতে পারোনি?</b><div class="mu">প্রশ্ন করলে ক্লাস থামবে, উত্তরের পর আবার এই ধাপ থেকে চলবে।</div><input id="gq" placeholder="প্রশ্ন লিখুন বা মাইক চাপুন"><div class="row" style="margin-top:8px"><button class="g" id="gmic" onclick="gMic()">🎙️ বলে প্রশ্ন</button><button onclick="gAsk()">পাঠান</button></div>${GA?`<div class="m" style="margin-top:10px"><div class="mu">প্রশ্ন: ${e(GA.q)}</div><div style="white-space:pre-wrap">${e(GA.a)}</div></div>`:""}</div>
- <div class="c"><b>📓 খাতায় লেখার নিয়ম</b><div style="margin-top:6px"><b>দেওয়া আছে:</b> ${e(G.given)}</div><div style="margin-top:6px"><b>অঙ্কনের বিবরণ:</b></div>${G.steps.map((x,i)=>`<div>${nc(i+1)}। ${e(x.t)}</div>`).join("")}<div style="margin-top:6px"><b>প্রমাণ:</b> ${e(G.proof)}</div><div class="mu" style="margin-top:8px">চিত্রটি সঠিক মাপে আঁকা। বইয়ের ভাষা ও পরিভাষা হুবহু মেলাতে নিজের পাঠ্যবই দেখে নাও।</div></div>`}
+ ${G.checks?`<div class="c"><b>🔍 গাণিতিক যাচাই</b>${G.checks.map(c=>`<div class="mu">${c.ok?"✅":"❌"} ${e(c.d)} (পাওয়া গেছে ${isFinite(c.val)?nn(c.val):"—"})</div>`).join("")}${G.warn?`<div class="hw">⚠ ${e(G.warn)}</div>`:""}</div>`:""}<div class="c"><b>📓 খাতায় লেখার নিয়ম</b><div style="margin-top:6px"><b>দেওয়া আছে:</b> ${e(G.given)}</div>${G.find?`<div style="margin-top:6px"><b>প্রমাণ্য/নির্ণেয়:</b> ${e(G.find)}</div>`:""}<div style="margin-top:6px"><b>অঙ্কন ও চিত্রের বিবরণ:</b></div>${G.steps.map((x,i)=>`<div>${nc(i+1)}। ${e(x.t)}</div>`).join("")}<div style="margin-top:6px"><b>প্রমাণ:</b> ${e(G.proof)}</div><div class="mu" style="margin-top:8px">চিত্রটি সঠিক মাপে আঁকা। বইয়ের ভাষা ও পরিভাষা হুবহু মেলাতে নিজের পাঠ্যবই দেখে নাও।</div></div>`}
 const gTxt=s=>s.t+(s.why?" কারণ, "+s.why:"");
 function gPlay(){GP=true;GW=false;geoShow();gStep()}
 function gPause(){GP=false;GW=false;stopSpeak();geoShow()}
